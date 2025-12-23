@@ -15,6 +15,11 @@ export interface SanityImage {
   alt?: string;
 }
 
+export interface ProductSpecification {
+  label: string;
+  value: string;
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -22,12 +27,20 @@ export interface Product {
   description: string;
   images: SanityImage[];
   category?: Category;
+  specifications?: ProductSpecification[];
   datasheet?: {
     asset: {
       url: string;
     };
   };
   hasDatasheet?: boolean;
+}
+
+export interface HeroSlide {
+  image: string;
+  title: string;
+  subtitle: string;
+  description: string;
 }
 
 export interface QuoteItem {
@@ -40,8 +53,13 @@ export interface QuoteItem {
 export interface ContactFormData {
   name: string;
   email: string;
+  phone?: string;
+  company?: string;
+  ice?: string;
   message: string;
+  customRequest?: string;
   products: QuoteItem[];
+  attachment?: File | null;
   honeypot?: string;
 }
 
