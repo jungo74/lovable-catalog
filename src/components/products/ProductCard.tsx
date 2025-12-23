@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 import type { Product } from '@/types';
 import { useQuoteStore } from '@/lib/store/quote-store';
 
@@ -13,17 +13,17 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const handleAddToQuote = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     addItem({ id: product._id, name: product.name, slug: product.slug });
   };
 
-  // Placeholder image if no images
   const imageUrl = product.images?.[0]?.asset?.url 
     || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=600&q=80';
 
   return (
     <Link
       to={`/products/${product.slug}`}
-      className="group block bg-card rounded-xl overflow-hidden border border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300"
+      className="group block bg-card rounded-xl overflow-hidden border border-border hover:border-orange/30 hover:shadow-xl transition-all duration-300"
     >
       {/* Image */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
@@ -37,27 +37,37 @@ export function ProductCard({ product }: ProductCardProps) {
         />
         {/* Badge catégorie */}
         {product.category && (
-          <span className="absolute top-3 left-3 px-3 py-1 bg-background/90 backdrop-blur-sm text-xs font-medium rounded-full">
+          <span className="absolute top-3 left-3 px-3 py-1.5 bg-background/95 backdrop-blur-sm text-xs font-medium rounded-full border border-border">
             {product.category.name}
           </span>
         )}
-        {/* Bouton ajouter */}
+        {/* Bouton ajouter au devis */}
         <button
           onClick={handleAddToQuote}
-          className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+          className={`absolute bottom-3 right-3 flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
             isInQuote
-              ? 'bg-success text-success-foreground'
-              : 'bg-primary text-primary-foreground opacity-0 group-hover:opacity-100'
+              ? 'bg-green-500 text-white'
+              : 'bg-orange text-white opacity-0 group-hover:opacity-100 hover:bg-orange-dark'
           }`}
-          aria-label="Ajouter au devis"
+          aria-label={isInQuote ? 'Ajouté au devis' : 'Ajouter au devis'}
         >
-          <Plus className="h-5 w-5" />
+          {isInQuote ? (
+            <>
+              <Check className="h-4 w-4" />
+              Ajouté
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4" />
+              Devis
+            </>
+          )}
         </button>
       </div>
 
       {/* Contenu */}
-      <div className="p-4 md:p-5">
-        <h3 className="font-serif text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+      <div className="p-5">
+        <h3 className="font-serif text-lg font-semibold text-foreground mb-2 group-hover:text-orange transition-colors line-clamp-1">
           {product.name}
         </h3>
         <p className="text-muted-foreground text-sm line-clamp-2">

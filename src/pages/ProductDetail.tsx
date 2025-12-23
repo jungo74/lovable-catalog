@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import { useQuoteStore } from '@/lib/store/quote-store';
-import { Plus, Check, Download, ArrowLeft, ShoppingBag } from 'lucide-react';
+import { Plus, Check, Download, ArrowLeft, FileText, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { ProductSpecification } from '@/types';
 
@@ -53,6 +53,20 @@ const mockProducts: Record<string, any> = {
       { label: 'Écran', value: '15.6" Full HD' },
     ]
   },
+  'detergent-multi-surface': {
+    _id: '4',
+    name: 'Détergent Multi-Surface Pro',
+    slug: 'detergent-multi-surface',
+    description: 'Nettoyant professionnel multi-usages pour toutes surfaces. Formule concentrée haute performance.',
+    images: [{ asset: { url: 'https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?auto=format&fit=crop&w=800&q=80' } }],
+    category: { name: 'Hygiène & Nettoyage', slug: 'hygiene-nettoyage' },
+    specifications: [
+      { label: 'Référence', value: 'DET-MUL-004' },
+      { label: 'Contenance', value: '5 Litres' },
+      { label: 'Dilution', value: '1:50' },
+      { label: 'pH', value: '8.5' },
+    ]
+  },
 };
 
 const ProductDetail = () => {
@@ -63,10 +77,14 @@ const ProductDetail = () => {
 
   if (!product) {
     return (
-      <main className="pt-24 pb-16 min-h-screen flex items-center justify-center">
+      <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-muted/30">
         <div className="text-center">
           <h1 className="font-serif text-2xl font-bold mb-4">Produit non trouvé</h1>
-          <Link to="/products" className="text-orange hover:underline">Retour au catalogue</Link>
+          <p className="text-muted-foreground mb-6">Ce produit n'existe pas ou n'est plus disponible.</p>
+          <Link to="/products" className="inline-flex items-center gap-2 px-6 py-3 bg-orange text-white rounded-lg font-medium hover:bg-orange-dark transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Retour au catalogue
+          </Link>
         </div>
       </main>
     );
@@ -77,7 +95,7 @@ const ProductDetail = () => {
   return (
     <>
       <SEOHead 
-        title={product.name} 
+        title={`${product.name} | SWH Distribution`} 
         description={product.description.slice(0, 160)} 
         canonical={`/products/${product.slug}`} 
         image={product.images[0]?.asset?.url} 
@@ -95,113 +113,143 @@ const ProductDetail = () => {
         { name: product.name, url: `/products/${product.slug}` }
       ]} />
       
-      <main className="pt-24 pb-16">
+      <main className="pt-20 pb-16 min-h-screen bg-muted/30">
         <div className="container mx-auto px-4">
           {/* Navigation */}
-          <Link to="/products" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors">
+          <Link to="/products" className="inline-flex items-center gap-2 text-muted-foreground hover:text-orange mt-6 mb-8 transition-colors">
             <ArrowLeft className="h-4 w-4" /> Retour au catalogue
           </Link>
           
-          <div className="grid lg:grid-cols-2 gap-12">
-            {/* Image */}
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="aspect-square rounded-2xl overflow-hidden bg-muted"
-            >
-              <img 
-                src={product.images[0]?.asset?.url} 
-                alt={product.name} 
-                className="w-full h-full object-cover" 
-                width={800} 
-                height={800} 
-              />
-            </motion.div>
-            
-            {/* Informations */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              {product.category && (
-                <Link 
-                  to={`/products?category=${product.category.slug}`}
-                  className="inline-block text-sm font-medium text-orange mb-3 hover:underline"
-                >
-                  {product.category.name}
-                </Link>
-              )}
+          <div className="bg-background rounded-2xl shadow-sm border border-border overflow-hidden">
+            <div className="grid lg:grid-cols-2 gap-0">
+              {/* Image */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="aspect-square bg-muted"
+              >
+                <img 
+                  src={product.images[0]?.asset?.url} 
+                  alt={product.name} 
+                  className="w-full h-full object-cover" 
+                  width={800} 
+                  height={800} 
+                />
+              </motion.div>
               
-              <h1 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
-                {product.name}
-              </h1>
-              
-              <p className="text-muted-foreground text-lg leading-relaxed mb-8">
-                {product.description}
-              </p>
-
-              {/* Spécifications techniques */}
-              {specifications.length > 0 && (
-                <div className="mb-8">
-                  <h2 className="font-semibold text-lg mb-4">Caractéristiques</h2>
-                  <div className="bg-muted rounded-xl p-4 space-y-3">
-                    {specifications.map((spec, index) => (
-                      <div key={index} className="flex justify-between items-center py-2 border-b border-border last:border-0">
-                        <span className="text-muted-foreground">{spec.label}</span>
-                        <span className="font-medium text-foreground">{spec.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button 
-                  onClick={() => addItem({ id: product._id, name: product.name, slug: product.slug })} 
-                  className={`flex-1 inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold transition-all ${
-                    isInQuote 
-                      ? 'bg-success text-success-foreground' 
-                      : 'bg-orange text-white hover:bg-orange-dark'
-                  }`}
-                >
-                  {isInQuote ? (
-                    <>
-                      <Check className="h-5 w-5" /> Dans le panier
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="h-5 w-5" /> Ajouter au panier
-                    </>
-                  )}
-                </button>
-                
-                {isInQuote && (
-                  <Link
-                    to="/contact"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-4 border-2 border-orange text-orange rounded-lg font-semibold hover:bg-orange hover:text-white transition-all"
+              {/* Informations */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="p-8 lg:p-12 flex flex-col"
+              >
+                {product.category && (
+                  <Link 
+                    to={`/products?category=${product.category.slug}`}
+                    className="inline-flex items-center gap-1 text-sm font-medium text-orange mb-4 hover:underline w-fit"
                   >
-                    <ShoppingBag className="h-5 w-5" />
-                    Voir le panier
+                    {product.category.name}
                   </Link>
                 )}
-              </div>
-              
-              {/* Fiche technique */}
-              {product.datasheet?.asset?.url && (
-                <a
-                  href={product.datasheet.asset.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 inline-flex items-center gap-2 text-primary hover:underline"
-                >
-                  <Download className="h-5 w-5" />
-                  Télécharger la fiche technique
-                </a>
-              )}
-            </motion.div>
+                
+                <h1 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
+                  {product.name}
+                </h1>
+                
+                <p className="text-muted-foreground text-lg leading-relaxed mb-8">
+                  {product.description}
+                </p>
+
+                {/* Spécifications techniques */}
+                {specifications.length > 0 && (
+                  <div className="mb-8 flex-1">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Info className="h-5 w-5 text-orange" />
+                      <h2 className="font-semibold text-lg">Caractéristiques techniques</h2>
+                    </div>
+                    <div className="bg-muted/50 rounded-xl overflow-hidden">
+                      {specifications.map((spec, index) => (
+                        <div 
+                          key={index} 
+                          className={`flex justify-between items-center px-5 py-3.5 ${
+                            index % 2 === 0 ? 'bg-muted/30' : ''
+                          }`}
+                        >
+                          <span className="text-muted-foreground text-sm">{spec.label}</span>
+                          <span className="font-medium text-foreground">{spec.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Actions */}
+                <div className="space-y-4 mt-auto">
+                  <button 
+                    onClick={() => addItem({ id: product._id, name: product.name, slug: product.slug })} 
+                    className={`w-full inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-semibold text-lg transition-all ${
+                      isInQuote 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-orange text-white hover:bg-orange-dark hover:scale-[1.02]'
+                    }`}
+                  >
+                    {isInQuote ? (
+                      <>
+                        <Check className="h-5 w-5" /> Ajouté au devis
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-5 w-5" /> Ajouter au devis
+                      </>
+                    )}
+                  </button>
+                  
+                  {isInQuote && (
+                    <Link
+                      to="/contact"
+                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 border-2 border-orange text-orange rounded-xl font-semibold hover:bg-orange hover:text-white transition-all"
+                    >
+                      <FileText className="h-5 w-5" />
+                      Finaliser ma demande de devis
+                    </Link>
+                  )}
+                </div>
+                
+                {/* Fiche technique */}
+                {product.datasheet?.asset?.url && (
+                  <a
+                    href={product.datasheet.asset.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-6 inline-flex items-center gap-2 text-orange hover:underline"
+                  >
+                    <Download className="h-5 w-5" />
+                    Télécharger la fiche technique
+                  </a>
+                )}
+              </motion.div>
+            </div>
           </div>
+
+          {/* Section produit introuvable */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-12 p-8 bg-primary/5 border border-primary/10 rounded-2xl text-center"
+          >
+            <h3 className="font-serif text-xl font-bold mb-2">Besoin d'un produit similaire ou spécifique ?</h3>
+            <p className="text-muted-foreground mb-4">
+              Nous pouvons sourcer n'importe quel produit pour vous, même s'il n'est pas dans notre catalogue.
+            </p>
+            <Link
+              to="/contact?custom=true"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-orange text-white rounded-lg font-medium hover:bg-orange-dark transition-colors"
+            >
+              Faire une demande spéciale
+            </Link>
+          </motion.div>
         </div>
       </main>
     </>
