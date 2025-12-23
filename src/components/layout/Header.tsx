@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Menu, X, FileText, ShoppingBag } from 'lucide-react';
+import { Menu, X, FileText } from 'lucide-react';
 import { useQuoteStore } from '@/lib/store/quote-store';
 import { cn } from '@/lib/utils';
 
@@ -10,7 +10,6 @@ export function Header() {
   const location = useLocation();
   const itemCount = useQuoteStore((state) => state.getItemCount());
 
-  // Déterminer si on est sur la page d'accueil
   const isHomePage = location.pathname === '/';
 
   useEffect(() => {
@@ -37,7 +36,6 @@ export function Header() {
     return location.pathname.startsWith(path);
   };
 
-  // Couleur du header basée sur scroll ET page courante
   const headerBg = isScrolled || isMobileMenuOpen || !isHomePage
     ? 'bg-background/95 backdrop-blur-md shadow-sm'
     : 'bg-transparent';
@@ -77,30 +75,31 @@ export function Header() {
               </Link>
             ))}
 
-            {/* Panier / Devis */}
+            {/* Demande de devis */}
             <Link
               to="/contact"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all bg-orange text-white hover:bg-orange-dark"
+              className="relative flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all bg-orange text-white hover:bg-orange-dark"
             >
-              <ShoppingBag className="h-4 w-4" />
-              Panier
+              <FileText className="h-4 w-4" />
+              Demander un devis
               {itemCount > 0 && (
-                <span className="flex items-center justify-center w-5 h-5 text-xs bg-white text-orange rounded-full font-bold">
+                <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 text-xs bg-primary text-white rounded-full font-bold animate-pulse">
                   {itemCount}
                 </span>
               )}
             </Link>
           </div>
 
-          {/* Bouton mobile + panier */}
+          {/* Bouton mobile */}
           <div className="flex items-center gap-3 md:hidden">
             {itemCount > 0 && (
               <Link
                 to="/contact"
-                className="relative flex items-center justify-center w-10 h-10 rounded-full bg-orange text-white"
+                className="relative flex items-center justify-center px-3 py-2 rounded-lg bg-orange text-white text-sm font-medium"
               >
-                <ShoppingBag className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 w-5 h-5 text-xs bg-primary text-white rounded-full flex items-center justify-center font-bold">
+                <FileText className="h-4 w-4 mr-1" />
+                Devis
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 text-xs bg-primary text-white rounded-full flex items-center justify-center font-bold">
                   {itemCount}
                 </span>
               </Link>
@@ -117,8 +116,8 @@ export function Header() {
 
         {/* Menu mobile */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-slide-down">
-            <div className="flex flex-col gap-4">
+          <div className="md:hidden py-4 border-t border-border animate-fade-in">
+            <div className="flex flex-col gap-3">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -137,8 +136,8 @@ export function Header() {
                 to="/contact"
                 className="flex items-center justify-center gap-2 px-4 py-3 bg-orange text-white rounded-lg font-medium"
               >
-                <ShoppingBag className="h-4 w-4" />
-                Voir le panier
+                <FileText className="h-4 w-4" />
+                Demander un devis
                 {itemCount > 0 && (
                   <span className="flex items-center justify-center w-5 h-5 text-xs bg-white text-orange rounded-full font-bold">
                     {itemCount}
