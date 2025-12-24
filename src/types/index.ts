@@ -79,8 +79,8 @@ export interface SEOConfig {
 
 export const seoConfig: SEOConfig = {
   siteUrl: 'https://www.swhnegoce.com',
-  siteName: 'SWH Négoce',
-  defaultTitle: 'SWH Négoce | Fournitures Professionnelles au Maroc',
+  siteName: 'SWH NEGOCE',
+  defaultTitle: 'SWH NEGOCE | Fournitures Professionnelles au Maroc',
   defaultDescription: 'Votre partenaire de confiance pour produits d\'hygiène, vêtements de travail et matériel informatique au Maroc.',
   ownerEmail: 'contact@swhnegoce.com',
   ownerPhone: '+212 1 23 45 67 89',

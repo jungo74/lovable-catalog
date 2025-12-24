@@ -57,7 +57,7 @@ export function Header() {
             to="/"
             className={cn('font-serif text-xl md:text-2xl font-bold transition-colors', textColor)}
           >
-            <span className="text-orange">SWH</span> Distribution
+            <span className="text-orange">SWH</span> NEGOCE
           </Link>
 
           {/* Navigation desktop */}

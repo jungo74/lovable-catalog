@@ -164,13 +164,13 @@ export function HeroCarousel() {
         </div>
       </div>
 
-      {/* Slide Indicators */}
-      <div className="absolute bottom-32 left-8 z-20 flex items-center gap-2">
+      {/* Slide Indicators - Positioned on the left */}
+      <div className="absolute bottom-24 left-8 z-20 flex items-center gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`h-1.5 rounded-full transition-all duration-500 ${
+            className={`h-1.5 rounded-full transition-all duration-300 ${
               index === currentIndex 
                 ? 'w-10 bg-orange' 
                 : 'w-3 bg-white/40 hover:bg-white/60'
@@ -180,21 +180,21 @@ export function HeroCarousel() {
         ))}
       </div>
 
-      {/* Scroll Indicator */}
+      {/* Scroll Indicator - Centered at bottom */}
       <motion.button
         onClick={scrollToContent}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/60 hover:text-white transition-colors cursor-pointer"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/60 hover:text-white transition-colors cursor-pointer"
       >
         <span className="text-xs font-medium tracking-widest uppercase">Défiler</span>
         <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-          className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center"
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-10 h-10 rounded-full border-2 border-white/40 flex items-center justify-center backdrop-blur-sm bg-white/5"
         >
-          <ChevronDown className="h-4 w-4" />
+          <ChevronDown className="h-5 w-5" />
         </motion.div>
       </motion.button>
     </section>
