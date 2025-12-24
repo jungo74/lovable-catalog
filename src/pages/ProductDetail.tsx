@@ -169,10 +169,9 @@ const ProductDetail = () => {
                   </div>
                 )}
                 
-                {/* Actions */}
                 <div className="space-y-4 mt-auto">
                   <button 
-                    onClick={() => addItem({ id: product._id, name: product.name, slug: product.slug })} 
+                    onClick={() => addItem({ id: product._id, name: product.name, slug: product.slug, image: product.images[0]?.asset?.url })} 
                     className={`w-full inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-semibold text-lg transition-all ${
                       isInQuote 
                         ? 'bg-green-500 text-white' 

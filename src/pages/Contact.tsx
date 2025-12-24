@@ -120,8 +120,22 @@ const Contact = () => {
         title="Demande de Devis" 
         description="Contactez SWH Négoce pour toute demande de devis. Remplissez le formulaire et nous vous répondrons sous 24h." 
       />
-      <main className="pt-24 pb-16 bg-muted/30">
+      <main className="pt-24 pb-20 bg-gradient-to-b from-muted/50 to-background min-h-screen">
         <div className="container mx-auto px-4">
+          {/* En-tête de page */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12"
+          >
+            <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+              Demander un Devis Gratuit
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Sélectionnez vos produits et recevez une offre personnalisée sous 24h. Service 100% gratuit et sans engagement.
+            </p>
+          </motion.div>
+
           <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             
             {/* Formulaire - 2/3 */}
@@ -129,15 +143,9 @@ const Contact = () => {
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-background rounded-2xl border border-border p-8 shadow-sm"
+                transition={{ delay: 0.1 }}
+                className="bg-background rounded-2xl border border-border p-8 md:p-10 shadow-lg"
               >
-                <h1 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-2">
-                  Demander un Devis Gratuit
-                </h1>
-                <p className="text-muted-foreground mb-8">
-                  Remplissez le formulaire ci-dessous et nous vous répondrons sous 24h.
-                </p>
-
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Honeypot */}
                   <input 
@@ -218,40 +226,52 @@ const Contact = () => {
                   {/* Produits sélectionnés */}
                   {items.length > 0 && (
                     <div className="bg-muted/50 rounded-xl p-5">
-                      <h3 className="font-medium mb-3 flex items-center gap-2">
+                      <h3 className="font-medium mb-4 flex items-center gap-2">
                         <span className="w-6 h-6 rounded-full bg-orange text-white flex items-center justify-center text-xs font-bold">
                           {items.length}
                         </span>
                         Produits dans votre sélection
                       </h3>
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {items.map((item) => (
-                          <div key={item.productId} className="flex items-center justify-between gap-3 p-3 bg-background rounded-lg">
-                            <span className="text-sm font-medium truncate">{item.productName}</span>
-                            <div className="flex items-center gap-2">
-                              <button 
-                                type="button"
-                                onClick={() => updateQuantity(item.productId, item.quantity - 1)} 
-                                className="w-7 h-7 rounded bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
-                              >
-                                <Minus className="h-3 w-3" />
-                              </button>
-                              <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                              <button 
-                                type="button"
-                                onClick={() => updateQuantity(item.productId, item.quantity + 1)} 
-                                className="w-7 h-7 rounded bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
-                              >
-                                <Plus className="h-3 w-3" />
-                              </button>
-                              <button 
-                                type="button"
-                                onClick={() => removeItem(item.productId)} 
-                                className="w-7 h-7 rounded bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </button>
+                          <div key={item.productId} className="flex items-center gap-4 p-3 bg-background rounded-xl border border-border">
+                            {/* Image du produit */}
+                            <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                              <img 
+                                src={item.productImage || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=100&q=80'} 
+                                alt={item.productName}
+                                className="w-full h-full object-cover"
+                              />
                             </div>
+                            <div className="flex-1 min-w-0">
+                              <Link to={`/products/${item.productSlug}`} className="text-sm font-semibold text-foreground hover:text-orange transition-colors line-clamp-1">
+                                {item.productName}
+                              </Link>
+                              <div className="flex items-center gap-2 mt-2">
+                                <button 
+                                  type="button"
+                                  onClick={() => updateQuantity(item.productId, item.quantity - 1)} 
+                                  className="w-7 h-7 rounded bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </button>
+                                <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                                <button 
+                                  type="button"
+                                  onClick={() => updateQuantity(item.productId, item.quantity + 1)} 
+                                  className="w-7 h-7 rounded bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </button>
+                              </div>
+                            </div>
+                            <button 
+                              type="button"
+                              onClick={() => removeItem(item.productId)} 
+                              className="w-8 h-8 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors flex-shrink-0"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -324,21 +344,21 @@ const Contact = () => {
             </div>
 
             {/* Sidebar Contact Info - 1/3 */}
-            <div className="space-y-5">
+            <div className="lg:sticky lg:top-28 space-y-5 h-fit">
               {/* Carte entreprise */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-primary text-primary-foreground rounded-2xl p-6"
+                transition={{ delay: 0.15 }}
+                className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-2xl p-6 shadow-lg"
               >
                 <h2 className="font-serif text-xl font-bold mb-2">SWH Négoce</h2>
                 <p className="text-primary-foreground/80 text-sm mb-5">
                   Votre partenaire de confiance pour toutes vos fournitures professionnelles au Maroc.
                 </p>
-                <div className="flex items-center gap-3 px-4 py-3 bg-primary-foreground/10 rounded-lg">
+                <div className="flex items-center gap-3 px-4 py-3 bg-primary-foreground/10 rounded-lg backdrop-blur-sm">
                   <span className="text-primary-foreground/60 text-sm">ICE</span>
-                  <span className="font-mono font-semibold">{seoConfig.ice}</span>
+                  <span className="font-mono font-semibold tracking-wide">{seoConfig.ice}</span>
                 </div>
               </motion.div>
 
