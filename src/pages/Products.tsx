@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Package, ArrowRight } from 'lucide-react';
+import { Search, Package, ArrowRight, LayoutGrid, List } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { ProductCard } from '@/components/products/ProductCard';
 import { motion } from 'framer-motion';
@@ -26,6 +26,7 @@ const mockProducts = [
 const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const filteredProducts = useMemo(() => {
     return mockProducts.filter((product) => {
@@ -67,22 +68,40 @@ const Products = () => {
             </motion.p>
           </div>
 
-          {/* Barre de recherche */}
+          {/* Barre de recherche + Toggle vue */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="max-w-2xl mx-auto mb-8"
           >
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Rechercher un produit..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/50 focus:border-orange transition-all"
-              />
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Rechercher un produit..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/50 focus:border-orange transition-all"
+                />
+              </div>
+              <div className="flex rounded-xl border border-border bg-background overflow-hidden">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-4 transition-colors ${viewMode === 'grid' ? 'bg-orange text-white' : 'text-muted-foreground hover:text-foreground'}`}
+                  aria-label="Vue grille"
+                >
+                  <LayoutGrid className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-4 transition-colors ${viewMode === 'list' ? 'bg-orange text-white' : 'text-muted-foreground hover:text-foreground'}`}
+                  aria-label="Vue liste"
+                >
+                  <List className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </motion.div>
 
@@ -126,20 +145,60 @@ const Products = () => {
             </p>
           )}
 
-          {/* Grille produits */}
+          {/* Grille ou Liste produits */}
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                >
-                  <ProductCard product={product} />
-                </motion.div>
-              ))}
-            </div>
+            viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map((product, index) => (
+                  <motion.div
+                    key={product._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * index }}
+                  >
+                    <ProductCard product={product} />
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4 max-w-4xl mx-auto">
+                {filteredProducts.map((product, index) => (
+                  <motion.div
+                    key={product._id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 * index }}
+                  >
+                    <Link
+                      to={`/products/${product.slug}`}
+                      className="flex gap-4 md:gap-6 bg-background rounded-xl p-4 border border-border hover:border-orange/50 hover:shadow-md transition-all group"
+                    >
+                      <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                        <img
+                          src={product.images?.[0]?.asset?.url}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <span className="text-xs text-orange font-medium mb-1">
+                          {product.category?.name}
+                        </span>
+                        <h3 className="font-semibold text-foreground text-lg mb-2 group-hover:text-orange transition-colors truncate">
+                          {product.name}
+                        </h3>
+                        <p className="text-muted-foreground text-sm line-clamp-2 hidden md:block">
+                          {product.description}
+                        </p>
+                      </div>
+                      <div className="flex items-center">
+                        <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-orange group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            )
           ) : (
             <div className="text-center py-16">
               <Package className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
@@ -167,7 +226,7 @@ const Products = () => {
                 Vous ne trouvez pas votre produit ?
               </h2>
               <p className="text-primary-foreground/80 text-lg mb-8">
-                Grâce à notre réseau de fournisseurs, <strong className="text-orange">SWH Distribution</strong> peut 
+                Grâce à notre réseau de fournisseurs, <strong className="text-orange">SWH NEGOCE</strong> peut 
                 vous procurer n'importe quel produit, même s'il n'est pas dans notre catalogue.
               </p>
               <Link
