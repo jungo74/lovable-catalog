@@ -57,27 +57,30 @@ export function HeroCarousel() {
 
   return (
     <section className="relative h-screen min-h-[700px] overflow-hidden">
-      {/* Background Images */}
-      <AnimatePresence mode="wait">
+      {/* Background Images - toutes préchargées */}
+      {slides.map((slide, index) => (
         <motion.div
-          key={currentIndex}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: 'easeInOut' }}
+          key={index}
+          initial={false}
+          animate={{ 
+            opacity: index === currentIndex ? 1 : 0,
+            scale: index === currentIndex ? 1 : 1.05
+          }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
           className="absolute inset-0"
+          style={{ zIndex: index === currentIndex ? 1 : 0 }}
         >
           <img
-            src={currentSlide.image}
-            alt={currentSlide.title}
+            src={slide.image}
+            alt={slide.title}
             className="w-full h-full object-cover"
-            loading={currentIndex === 0 ? 'eager' : 'lazy'}
+            loading="eager"
             width={1920}
             height={1080}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
         </motion.div>
-      </AnimatePresence>
+      ))}
 
       {/* Content */}
       <div className="relative z-10 h-full flex items-center">

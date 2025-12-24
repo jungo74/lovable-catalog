@@ -4,7 +4,7 @@ import type { QuoteItem } from '@/types';
 
 interface QuoteStore {
   items: QuoteItem[];
-  addItem: (product: { id: string; name: string; slug: string }) => void;
+  addItem: (product: { id: string; name: string; slug: string; image?: string }) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearQuote: () => void;
@@ -36,6 +36,7 @@ export const useQuoteStore = create<QuoteStore>()(
                 productId: product.id,
                 productName: product.name,
                 productSlug: product.slug,
+                productImage: product.image,
                 quantity: 1,
               },
             ],

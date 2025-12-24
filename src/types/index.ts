@@ -47,6 +47,7 @@ export interface QuoteItem {
   productId: string;
   productName: string;
   productSlug: string;
+  productImage?: string;
   quantity: number;
 }
 

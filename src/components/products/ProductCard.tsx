@@ -14,7 +14,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleAddToQuote = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem({ id: product._id, name: product.name, slug: product.slug });
+    addItem({ id: product._id, name: product.name, slug: product.slug, image: imageUrl });
   };
 
   const imageUrl = product.images?.[0]?.asset?.url 
