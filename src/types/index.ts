@@ -63,23 +63,27 @@ export interface ContactFormData {
   honeypot?: string;
 }
 
-// Configuration SEO
+// Configuration SEO simplifiée
 export interface SEOConfig {
   siteUrl: string;
   siteName: string;
   defaultTitle: string;
   defaultDescription: string;
-  defaultImage: string;
-  twitterHandle: string;
   ownerEmail: string;
+  ownerPhone: string;
+  whatsapp: string;
+  ice: string;
+  address: string;
 }
 
 export const seoConfig: SEOConfig = {
-  siteUrl: 'https://votresite.com', // À remplacer par votre domaine
-  siteName: 'Votre Entreprise',
-  defaultTitle: 'Votre Entreprise | Catalogue Produits',
-  defaultDescription: 'Découvrez notre catalogue de produits de qualité. Parcourez nos références et demandez un devis gratuit.',
-  defaultImage: '/og-image.jpg',
-  twitterHandle: '@votreentreprise',
-  ownerEmail: 'contact@votreentreprise.com',
+  siteUrl: 'https://www.swhnegoce.com',
+  siteName: 'SWH Négoce',
+  defaultTitle: 'SWH Négoce | Fournitures Professionnelles au Maroc',
+  defaultDescription: 'Votre partenaire de confiance pour produits d\'hygiène, vêtements de travail et matériel informatique au Maroc.',
+  ownerEmail: 'contact@swhnegoce.com',
+  ownerPhone: '+212 1 23 45 67 89',
+  whatsapp: '+212612345678',
+  ice: '002075015000049',
+  address: 'Zone Industrielle, Casablanca, Maroc',
 };

@@ -1,6 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import { useQuoteStore } from '@/lib/store/quote-store';
 import { Plus, Check, Download, ArrowLeft, FileText, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -95,23 +94,9 @@ const ProductDetail = () => {
   return (
     <>
       <SEOHead 
-        title={`${product.name} | SWH Distribution`} 
-        description={product.description.slice(0, 160)} 
-        canonical={`/products/${product.slug}`} 
-        image={product.images[0]?.asset?.url} 
+        title={product.name} 
+        description={product.description.slice(0, 160)}
       />
-      <ProductJsonLd 
-        name={product.name} 
-        description={product.description} 
-        images={[product.images[0]?.asset?.url]} 
-        category={product.category?.name} 
-        slug={product.slug} 
-      />
-      <BreadcrumbJsonLd items={[
-        { name: 'Accueil', url: '/' }, 
-        { name: 'Produits', url: '/products' }, 
-        { name: product.name, url: `/products/${product.slug}` }
-      ]} />
       
       <main className="pt-20 pb-16 min-h-screen bg-muted/30">
         <div className="container mx-auto px-4">

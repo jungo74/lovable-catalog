@@ -43,9 +43,8 @@ const Products = () => {
   return (
     <>
       <SEOHead
-        title="Catalogue Produits | SWH Distribution"
+        title="Catalogue Produits"
         description="Explorez notre gamme complète de produits professionnels : hygiène, vêtements de travail, matériel informatique. Demandez un devis personnalisé."
-        canonical="/products"
       />
       <main className="pt-20 pb-16 min-h-screen bg-muted/30">
         <div className="container mx-auto px-4">
