@@ -8,15 +8,15 @@ export function Footer() {
   return (
     <footer className="bg-foreground text-background py-12 md:py-16">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
           {/* Colonne 1 - À propos */}
           <div>
             <h3 className="font-serif text-xl font-bold mb-4">
-              {seoConfig.siteName}
+              <span className="text-orange">SWH</span> NEGOCE
             </h3>
             <p className="text-background/70 text-sm leading-relaxed mb-4">
-              Découvrez notre catalogue de produits de qualité. 
-              Nous vous accompagnons dans tous vos projets.
+              Votre partenaire de confiance pour les fournitures professionnelles. 
+              Qualité, réactivité et service personnalisé.
             </p>
           </div>
 
@@ -30,13 +30,29 @@ export function Footer() {
               <Link to="/products" className="text-background/70 hover:text-background transition-colors text-sm">
                 Catalogue Produits
               </Link>
+              <Link to="/a-propos" className="text-background/70 hover:text-background transition-colors text-sm">
+                À Propos
+              </Link>
               <Link to="/contact" className="text-background/70 hover:text-background transition-colors text-sm">
                 Demande de Devis
               </Link>
             </nav>
           </div>
 
-          {/* Colonne 3 - Contact */}
+          {/* Colonne 3 - Informations */}
+          <div>
+            <h4 className="font-semibold mb-4">Informations</h4>
+            <nav className="flex flex-col gap-2">
+              <Link to="/mentions-legales" className="text-background/70 hover:text-background transition-colors text-sm">
+                Mentions légales
+              </Link>
+              <Link to="/politique-confidentialite" className="text-background/70 hover:text-background transition-colors text-sm">
+                Politique de confidentialité
+              </Link>
+            </nav>
+          </div>
+
+          {/* Colonne 4 - Contact */}
           <div>
             <h4 className="font-semibold mb-4">Contact</h4>
             <div className="flex flex-col gap-3">
