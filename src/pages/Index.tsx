@@ -1,5 +1,4 @@
 import { SEOHead } from '@/components/seo/SEOHead';
-import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/seo/JsonLd';
 import { HeroCarousel } from '@/components/home/HeroCarousel';
 import { CategoriesSection } from '@/components/home/CategoriesSection';
 import { FeaturesSection } from '@/components/home/FeaturesSection';
@@ -19,11 +18,8 @@ const Index = () => {
     <>
       <SEOHead
         title="Accueil"
-        description="SWH Distribution - Votre partenaire pour produits d'hygiène, vêtements de travail et matériel informatique. Demandez un devis gratuit."
-        canonical="/"
+        description="SWH Négoce - Votre partenaire de confiance pour produits d'hygiène, vêtements de travail et matériel informatique au Maroc. Demandez un devis gratuit."
       />
-      <OrganizationJsonLd />
-      <WebSiteJsonLd />
       
       <main>
         <HeroCarousel />

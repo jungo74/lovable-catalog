@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { Mail, MessageCircle, ArrowRight, ChevronDown } from 'lucide-react';
 import type { HeroSlide } from '@/types';
 
-// Import des images
 import heroHygiene from '@/assets/hero-hygiene.jpg';
 import heroWorkwear from '@/assets/hero-workwear.jpg';
 import heroIT from '@/assets/hero-it.jpg';
@@ -32,15 +31,23 @@ const slides: HeroSlide[] = [
 
 export function HeroCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % slides.length);
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(nextSlide, 7000);
+    if (!isAutoPlaying) return;
+    const timer = setInterval(nextSlide, 6000);
     return () => clearInterval(timer);
-  }, [nextSlide]);
+  }, [nextSlide, isAutoPlaying]);
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  };
 
   const currentSlide = slides[currentIndex];
 
@@ -49,15 +56,15 @@ export function HeroCarousel() {
   };
 
   return (
-    <section className="relative h-screen min-h-[600px] overflow-hidden">
-      {/* Images avec animation fondu */}
+    <section className="relative h-screen min-h-[700px] overflow-hidden">
+      {/* Background Images */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
-          initial={{ opacity: 0, scale: 1.05 }}
+          initial={{ opacity: 0, scale: 1.1 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.2, ease: 'easeInOut' }}
+          transition={{ duration: 1.5, ease: 'easeInOut' }}
           className="absolute inset-0"
         >
           <img
@@ -68,104 +75,125 @@ export function HeroCarousel() {
             width={1920}
             height={1080}
           />
-          {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/60 via-primary/40 to-primary/70" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
         </motion.div>
       </AnimatePresence>
 
-      {/* Contenu */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
-        <motion.span
-          key={`badge-${currentIndex}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="mb-4 inline-block text-sm font-medium tracking-widest uppercase text-white/80"
-        >
-          SWH Distribution
-        </motion.span>
+      {/* Content */}
+      <div className="relative z-10 h-full flex items-center">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl">
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="flex items-center gap-2 mb-6"
+            >
+              <span className="w-2 h-2 rounded-full bg-orange animate-pulse" />
+              <span className="text-white/80 text-sm font-medium tracking-wide">
+                Votre Partenaire de Confiance
+              </span>
+            </motion.div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentIndex}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
-          >
-            <h1 className="mb-2 font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-white max-w-4xl">
-              {currentSlide.title}
-            </h1>
+            {/* Title */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`title-${currentIndex}`}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+              >
+                <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-2 leading-tight">
+                  {currentSlide.title}
+                </h1>
+                <p className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-orange mb-6">
+                  {currentSlide.subtitle}
+                </p>
+              </motion.div>
+            </AnimatePresence>
 
-            <span className="mb-6 block font-serif text-2xl md:text-4xl lg:text-5xl font-bold text-orange">
-              {currentSlide.subtitle}
-            </span>
+            {/* Description */}
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={`desc-${currentIndex}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="text-lg md:text-xl text-white/70 mb-10 max-w-2xl leading-relaxed"
+              >
+                {currentSlide.description}
+              </motion.p>
+            </AnimatePresence>
 
-            <p className="mb-8 max-w-3xl mx-auto text-base md:text-lg text-white/90">
-              {currentSlide.description}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="flex flex-col sm:flex-row gap-4"
-        >
-          <Link
-            to="/products"
-            className="group inline-flex items-center justify-center gap-2 rounded-lg bg-orange px-8 py-4 text-lg font-semibold text-white transition-all hover:bg-orange-dark hover:scale-105"
-          >
-            Voir les produits
-            <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-          </Link>
-          <Link
-            to="/contact"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-white/50 px-8 py-4 text-lg font-semibold text-white transition-all hover:bg-white/10 hover:border-white"
-          >
-            Demander un devis
-          </Link>
-        </motion.div>
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="flex flex-wrap items-center gap-4"
+            >
+              <Link
+                to="/contact"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-orange text-white rounded-lg font-semibold hover:bg-orange-dark transition-all hover:scale-105 shadow-lg shadow-orange/25"
+              >
+                <Mail className="h-5 w-5" />
+                Demander un Devis
+              </Link>
+              <Link
+                to="/contact"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-foreground rounded-lg font-semibold hover:bg-white/90 transition-all"
+              >
+                <MessageCircle className="h-5 w-5" />
+                Contactez-nous
+              </Link>
+              <Link
+                to="/products"
+                className="inline-flex items-center gap-2 px-6 py-4 text-white font-medium hover:text-orange transition-colors group"
+              >
+                Voir le Catalogue
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </motion.div>
+          </div>
+        </div>
       </div>
 
-      {/* Indicateurs slide */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20">
+      {/* Slide Indicators */}
+      <div className="absolute bottom-32 left-8 z-20 flex items-center gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`h-2 rounded-full transition-all duration-500 ${
-              index === currentIndex
-                ? 'bg-orange w-10'
-                : 'bg-white/40 w-2 hover:bg-white/60'
+            onClick={() => goToSlide(index)}
+            className={`h-1.5 rounded-full transition-all duration-500 ${
+              index === currentIndex 
+                ? 'w-10 bg-orange' 
+                : 'w-3 bg-white/40 hover:bg-white/60'
             }`}
             aria-label={`Aller au slide ${index + 1}`}
           />
         ))}
       </div>
 
-      {/* Indicateur de scroll */}
+      {/* Scroll Indicator */}
       <motion.button
         onClick={scrollToContent}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1, y: [0, 8, 0] }}
-        transition={{ 
-          opacity: { delay: 1, duration: 0.5 },
-          y: { repeat: Infinity, duration: 1.5, ease: 'easeInOut' }
-        }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/70 hover:text-white transition-colors cursor-pointer"
-        aria-label="Défiler vers le bas"
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/60 hover:text-white transition-colors cursor-pointer"
       >
-        <span className="text-xs font-medium tracking-wider uppercase">Découvrir</span>
-        <ChevronDown className="h-6 w-6" />
+        <span className="text-xs font-medium tracking-widest uppercase">Défiler</span>
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center"
+        >
+          <ChevronDown className="h-4 w-4" />
+        </motion.div>
       </motion.button>
-
-      {/* Numéro de licence */}
-      <div className="absolute bottom-4 right-4 text-white/50 text-xs z-20">
-        RC: 002075015000049
-      </div>
     </section>
   );
 }

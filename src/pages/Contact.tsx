@@ -2,8 +2,10 @@ import { useState, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { useQuoteStore } from '@/lib/store/quote-store';
-import { Trash2, Send, CheckCircle, Minus, Plus, Upload, X, Building2 } from 'lucide-react';
+import { Trash2, Send, CheckCircle, Minus, Plus, Upload, X, Phone, Mail, MapPin, Clock, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { seoConfig } from '@/types';
+import { motion } from 'framer-motion';
 
 const Contact = () => {
   const { toast } = useToast();
@@ -26,30 +28,35 @@ const Contact = () => {
     customRequest: '',
     honeypot: ''
   });
-  const [attachment, setAttachment] = useState<File | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Vérifier la taille (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({ title: 'Erreur', description: 'Le fichier ne doit pas dépasser 5 Mo.', variant: 'destructive' });
+    const files = Array.from(e.target.files || []);
+    
+    for (const file of files) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: 'Erreur', description: 'Chaque fichier ne doit pas dépasser 10 Mo.', variant: 'destructive' });
         return;
       }
-      // Vérifier le type
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
       if (!allowedTypes.includes(file.type)) {
-        toast({ title: 'Erreur', description: 'Type de fichier non autorisé. Utilisez JPG, PNG, PDF ou DOC.', variant: 'destructive' });
+        toast({ title: 'Erreur', description: 'Type de fichier non autorisé. Utilisez JPG, PNG, WebP ou PDF.', variant: 'destructive' });
         return;
       }
-      setAttachment(file);
     }
+    
+    if (attachments.length + files.length > 5) {
+      toast({ title: 'Erreur', description: 'Maximum 5 fichiers autorisés.', variant: 'destructive' });
+      return;
+    }
+    
+    setAttachments([...attachments, ...files]);
   };
 
-  const removeAttachment = () => {
-    setAttachment(null);
+  const removeAttachment = (index: number) => {
+    setAttachments(attachments.filter((_, i) => i !== index));
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -57,9 +64,8 @@ const Contact = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.honeypot) return; // Bot detected
+    if (formData.honeypot) return;
     
-    // Validation
     if (!formData.name.trim() || formData.name.length < 2) {
       toast({ title: 'Erreur', description: 'Veuillez entrer un nom valide.', variant: 'destructive' });
       return;
@@ -68,18 +74,12 @@ const Contact = () => {
       toast({ title: 'Erreur', description: 'Veuillez entrer un email valide.', variant: 'destructive' });
       return;
     }
-    if (formData.phone && !/^[+]?[\d\s-]{8,}$/.test(formData.phone)) {
-      toast({ title: 'Erreur', description: 'Numéro de téléphone invalide.', variant: 'destructive' });
-      return;
-    }
-    if (formData.ice && !/^\d{14,15}$/.test(formData.ice.replace(/\s/g, ''))) {
-      toast({ title: 'Erreur', description: 'L\'ICE doit contenir 14 ou 15 chiffres.', variant: 'destructive' });
+    if (!formData.message.trim()) {
+      toast({ title: 'Erreur', description: 'Veuillez entrer votre message.', variant: 'destructive' });
       return;
     }
     
     setLoading(true);
-    
-    // Simuler l'envoi (à remplacer par votre API)
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     setSuccess(true);
@@ -90,10 +90,14 @@ const Contact = () => {
   if (success) {
     return (
       <>
-        <SEOHead title="Demande envoyée" description="Votre demande de devis a été envoyée avec succès." canonical="/contact" noIndex />
-        <main className="pt-24 pb-16 min-h-screen flex items-center justify-center">
-          <div className="text-center p-8 max-w-md">
-            <CheckCircle className="h-20 w-20 text-success mx-auto mb-6" />
+        <SEOHead title="Demande envoyée" description="Votre demande de devis a été envoyée avec succès." />
+        <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-muted/30">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center p-8 max-w-md bg-background rounded-2xl shadow-lg"
+          >
+            <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-6" />
             <h1 className="font-serif text-3xl font-bold mb-4">Demande envoyée !</h1>
             <p className="text-muted-foreground mb-8">
               Merci pour votre demande. Notre équipe vous contactera sous 24 heures avec un devis personnalisé.
@@ -104,7 +108,7 @@ const Contact = () => {
             >
               Retour à l'accueil
             </Link>
-          </div>
+          </motion.div>
         </main>
       </>
     );
@@ -114,260 +118,326 @@ const Contact = () => {
     <>
       <SEOHead 
         title="Demande de Devis" 
-        description="Contactez SWH Distribution pour toute demande de devis. Remplissez le formulaire avec votre sélection de produits." 
-        canonical="/contact" 
+        description="Contactez SWH Négoce pour toute demande de devis. Remplissez le formulaire et nous vous répondrons sous 24h." 
       />
-      <main className="pt-24 pb-16">
+      <main className="pt-24 pb-16 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <span className="text-sm font-medium text-orange tracking-widest uppercase mb-2 block">
-              Demande de devis
-            </span>
-            <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">
-              {isCustomRequest ? 'Demande Spéciale' : 'Votre Panier'}
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {isCustomRequest 
-                ? "Décrivez le produit que vous recherchez et nous vous fournirons un devis personnalisé"
-                : "Vérifiez votre sélection et complétez vos informations pour recevoir un devis"
-              }
-            </p>
-          </div>
-          
-          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            {/* Sélection / Panier */}
-            <div className="space-y-6">
-              <div className="bg-card rounded-xl border border-border p-6">
-                <h2 className="font-serif text-xl font-semibold mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-full bg-orange text-white flex items-center justify-center text-sm font-bold">
-                    {items.length}
-                  </span>
-                  Produits sélectionnés
-                </h2>
-                
-                {items.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground mb-4">Aucun produit dans votre panier.</p>
-                    <Link 
-                      to="/products" 
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary-dark transition-colors"
-                    >
-                      Parcourir le catalogue
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {items.map((item) => (
-                      <div key={item.productId} className="flex items-center justify-between gap-4 p-4 bg-muted rounded-lg">
-                        <div className="flex-1 min-w-0">
-                          <Link to={`/products/${item.productSlug}`} className="font-medium text-foreground hover:text-orange truncate block">
-                            {item.productName}
-                          </Link>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button 
-                            onClick={() => updateQuantity(item.productId, item.quantity - 1)} 
-                            className="w-8 h-8 rounded bg-background border border-border flex items-center justify-center hover:bg-muted transition-colors"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </button>
-                          <span className="w-10 text-center font-medium">{item.quantity}</span>
-                          <button 
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)} 
-                            className="w-8 h-8 rounded bg-background border border-border flex items-center justify-center hover:bg-muted transition-colors"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </button>
-                          <button 
-                            onClick={() => removeItem(item.productId)} 
-                            className="w-8 h-8 rounded bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Section demande spéciale */}
-              <div className="bg-orange/10 border border-orange/30 rounded-xl p-6">
-                <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <span className="text-orange">💡</span>
-                  Vous ne trouvez pas votre produit ?
-                </h3>
-                <p className="text-muted-foreground text-sm mb-4">
-                  Décrivez le produit recherché ci-dessous et joignez une image si possible. 
-                  Notre équipe sourcera le produit pour vous.
+          <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            
+            {/* Formulaire - 2/3 */}
+            <div className="lg:col-span-2">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-background rounded-2xl border border-border p-8 shadow-sm"
+              >
+                <h1 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-2">
+                  Demander un Devis Gratuit
+                </h1>
+                <p className="text-muted-foreground mb-8">
+                  Remplissez le formulaire ci-dessous et nous vous répondrons sous 24h.
                 </p>
-                <textarea
-                  value={formData.customRequest}
-                  onChange={(e) => setFormData({ ...formData, customRequest: e.target.value })}
-                  placeholder="Ex: Je recherche des gants de protection en nitrile taille L, boîte de 100..."
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:border-orange focus:ring-2 focus:ring-orange/20 outline-none resize-none text-sm"
-                />
-              </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Honeypot */}
+                  <input 
+                    type="text" 
+                    name="honeypot" 
+                    value={formData.honeypot} 
+                    onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })} 
+                    className="hidden" 
+                    tabIndex={-1} 
+                    autoComplete="off" 
+                  />
+                  
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium mb-2">Nom Complet *</label>
+                      <input 
+                        type="text" 
+                        id="name" 
+                        value={formData.name} 
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+                        placeholder="Jean Dupont"
+                        required 
+                        className="w-full px-4 py-3.5 rounded-lg border border-input bg-background focus:border-orange focus:ring-2 focus:ring-orange/20 outline-none transition-all" 
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium mb-2">Adresse Email *</label>
+                      <input 
+                        type="email" 
+                        id="email" 
+                        value={formData.email} 
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
+                        placeholder="jean@entreprise.com"
+                        required 
+                        className="w-full px-4 py-3.5 rounded-lg border border-input bg-background focus:border-orange focus:ring-2 focus:ring-orange/20 outline-none transition-all" 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium mb-2">Téléphone</label>
+                      <input 
+                        type="tel" 
+                        id="phone" 
+                        value={formData.phone} 
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })} 
+                        placeholder="+212 6 12 34 56 78"
+                        className="w-full px-4 py-3.5 rounded-lg border border-input bg-background focus:border-orange focus:ring-2 focus:ring-orange/20 outline-none transition-all" 
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="company" className="block text-sm font-medium mb-2">Nom de l'Entreprise</label>
+                      <input 
+                        type="text" 
+                        id="company" 
+                        value={formData.company} 
+                        onChange={(e) => setFormData({ ...formData, company: e.target.value })} 
+                        placeholder="Votre Entreprise SARL"
+                        className="w-full px-4 py-3.5 rounded-lg border border-input bg-background focus:border-orange focus:ring-2 focus:ring-orange/20 outline-none transition-all" 
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-medium mb-2">Votre Message *</label>
+                    <textarea 
+                      id="message" 
+                      rows={5} 
+                      value={formData.message} 
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })} 
+                      className="w-full px-4 py-3.5 rounded-lg border border-input bg-background focus:border-orange focus:ring-2 focus:ring-orange/20 outline-none resize-none transition-all" 
+                      placeholder="Décrivez vos besoins en détail..." 
+                      required
+                    />
+                  </div>
+
+                  {/* Produits sélectionnés */}
+                  {items.length > 0 && (
+                    <div className="bg-muted/50 rounded-xl p-5">
+                      <h3 className="font-medium mb-3 flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-orange text-white flex items-center justify-center text-xs font-bold">
+                          {items.length}
+                        </span>
+                        Produits dans votre sélection
+                      </h3>
+                      <div className="space-y-2">
+                        {items.map((item) => (
+                          <div key={item.productId} className="flex items-center justify-between gap-3 p-3 bg-background rounded-lg">
+                            <span className="text-sm font-medium truncate">{item.productName}</span>
+                            <div className="flex items-center gap-2">
+                              <button 
+                                type="button"
+                                onClick={() => updateQuantity(item.productId, item.quantity - 1)} 
+                                className="w-7 h-7 rounded bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </button>
+                              <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                              <button 
+                                type="button"
+                                onClick={() => updateQuantity(item.productId, item.quantity + 1)} 
+                                className="w-7 h-7 rounded bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </button>
+                              <button 
+                                type="button"
+                                onClick={() => removeItem(item.productId)} 
+                                className="w-7 h-7 rounded bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload fichiers */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Pièces Jointes (Optionnel)</label>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Joignez des images ou fichiers PDF (max 5 fichiers, 10Mo chacun)
+                    </p>
+                    
+                    {attachments.length > 0 && (
+                      <div className="space-y-2 mb-3">
+                        {attachments.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                            <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+                            <button 
+                              type="button"
+                              onClick={() => removeAttachment(index)}
+                              className="w-7 h-7 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {attachments.length < 5 && (
+                      <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-orange hover:bg-orange/5 transition-all">
+                        <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                        <span className="text-sm font-medium text-foreground">Cliquez pour télécharger</span>
+                        <span className="text-xs text-muted-foreground mt-1">JPG, PNG, WebP, PDF</span>
+                        <input 
+                          ref={fileInputRef}
+                          type="file" 
+                          onChange={handleFileChange}
+                          accept="image/jpeg,image/png,image/webp,application/pdf"
+                          multiple
+                          className="hidden" 
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    disabled={loading} 
+                    className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-semibold text-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {loading ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Envoi en cours...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-5 w-5" />
+                        Envoyer le Message
+                      </>
+                    )}
+                  </button>
+                </form>
+              </motion.div>
             </div>
 
-            {/* Formulaire */}
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Honeypot */}
-              <input 
-                type="text" 
-                name="honeypot" 
-                value={formData.honeypot} 
-                onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })} 
-                className="hidden" 
-                tabIndex={-1} 
-                autoComplete="off" 
-              />
-              
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium mb-2">Nom complet *</label>
-                  <input 
-                    type="text" 
-                    id="name" 
-                    value={formData.name} 
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-                    required 
-                    className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" 
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-2">Email *</label>
-                  <input 
-                    type="email" 
-                    id="email" 
-                    value={formData.email} 
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
-                    required 
-                    className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" 
-                  />
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium mb-2">Téléphone</label>
-                  <input 
-                    type="tel" 
-                    id="phone" 
-                    value={formData.phone} 
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })} 
-                    placeholder="+212 6XX XXX XXX"
-                    className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" 
-                  />
-                </div>
-                <div>
-                  <label htmlFor="company" className="block text-sm font-medium mb-2">Entreprise</label>
-                  <input 
-                    type="text" 
-                    id="company" 
-                    value={formData.company} 
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })} 
-                    className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" 
-                  />
-                </div>
-              </div>
-
-              {/* Champ ICE */}
-              <div>
-                <label htmlFor="ice" className="block text-sm font-medium mb-2 flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                  ICE (Identifiant Commun de l'Entreprise)
-                </label>
-                <input 
-                  type="text" 
-                  id="ice" 
-                  value={formData.ice} 
-                  onChange={(e) => setFormData({ ...formData, ice: e.target.value })} 
-                  placeholder="000000000000000"
-                  maxLength={15}
-                  className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-mono" 
-                />
-                <p className="text-xs text-muted-foreground mt-1">15 chiffres - requis pour la facturation B2B</p>
-              </div>
-
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium mb-2">Message</label>
-                <textarea 
-                  id="message" 
-                  rows={3} 
-                  value={formData.message} 
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })} 
-                  className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none resize-none" 
-                  placeholder="Précisions sur votre demande, délais souhaités, lieu de livraison..." 
-                />
-              </div>
-
-              {/* Upload fichier */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Pièce jointe (image ou document)</label>
-                <div className="relative">
-                  {attachment ? (
-                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-orange/20 flex items-center justify-center">
-                          <Upload className="h-5 w-5 text-orange" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm truncate max-w-[200px]">{attachment.name}</p>
-                          <p className="text-xs text-muted-foreground">{(attachment.size / 1024).toFixed(0)} Ko</p>
-                        </div>
-                      </div>
-                      <button 
-                        type="button"
-                        onClick={removeAttachment}
-                        className="w-8 h-8 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-orange hover:bg-orange/5 transition-colors">
-                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                      <span className="text-sm text-muted-foreground">Cliquez ou glissez un fichier ici</span>
-                      <span className="text-xs text-muted-foreground mt-1">JPG, PNG, PDF, DOC (max 5 Mo)</span>
-                      <input 
-                        ref={fileInputRef}
-                        type="file" 
-                        onChange={handleFileChange}
-                        accept="image/jpeg,image/png,image/webp,application/pdf,.doc,.docx"
-                        className="hidden" 
-                      />
-                    </label>
-                  )}
-                </div>
-              </div>
-
-              <button 
-                type="submit" 
-                disabled={loading || (items.length === 0 && !formData.customRequest)} 
-                className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-orange text-white rounded-lg font-semibold hover:bg-orange-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            {/* Sidebar Contact Info - 1/3 */}
+            <div className="space-y-5">
+              {/* Carte entreprise */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-primary text-primary-foreground rounded-2xl p-6"
               >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Envoi en cours...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-5 w-5" />
-                    Envoyer la demande de devis
-                  </>
-                )}
-              </button>
+                <h2 className="font-serif text-xl font-bold mb-2">SWH Négoce</h2>
+                <p className="text-primary-foreground/80 text-sm mb-5">
+                  Votre partenaire de confiance pour toutes vos fournitures professionnelles au Maroc.
+                </p>
+                <div className="flex items-center gap-3 px-4 py-3 bg-primary-foreground/10 rounded-lg">
+                  <span className="text-primary-foreground/60 text-sm">ICE</span>
+                  <span className="font-mono font-semibold">{seoConfig.ice}</span>
+                </div>
+              </motion.div>
 
-              <p className="text-xs text-muted-foreground text-center">
-                En soumettant ce formulaire, vous acceptez d'être contacté par notre équipe commerciale.
-              </p>
-            </form>
+              {/* WhatsApp */}
+              <motion.a 
+                href={`https://wa.me/${seoConfig.whatsapp.replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="flex items-center gap-4 p-5 bg-green-500 text-white rounded-2xl hover:bg-green-600 transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <MessageCircle className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="font-semibold">WhatsApp</p>
+                  <p className="text-white/80 text-sm">Réponse instantanée</p>
+                </div>
+              </motion.a>
+
+              {/* Téléphone */}
+              <motion.a 
+                href={`tel:${seoConfig.ownerPhone.replace(/\s/g, '')}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center gap-4 p-5 bg-background border border-border rounded-2xl hover:border-orange/50 transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Phone className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">{seoConfig.ownerPhone}</p>
+                  <p className="text-muted-foreground text-sm">Lun-Ven, 8h00 - 18h00</p>
+                </div>
+              </motion.a>
+
+              {/* Email */}
+              <motion.a 
+                href={`mailto:${seoConfig.ownerEmail}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="flex items-center gap-4 p-5 bg-background border border-border rounded-2xl hover:border-orange/50 transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Mail className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">{seoConfig.ownerEmail}</p>
+                  <p className="text-muted-foreground text-sm">Réponse sous 24h</p>
+                </div>
+              </motion.a>
+
+              {/* Adresse */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex items-start gap-4 p-5 bg-background border border-border rounded-2xl"
+              >
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">Notre Adresse</p>
+                  <p className="text-muted-foreground text-sm">{seoConfig.address}</p>
+                </div>
+              </motion.div>
+
+              {/* Horaires */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="p-5 bg-background border border-border rounded-2xl"
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <Clock className="h-5 w-5 text-muted-foreground" />
+                  <span className="font-semibold text-foreground">Horaires d'Ouverture</span>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Lundi - Vendredi</span>
+                    <span className="font-medium">8h00 - 18h00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Samedi</span>
+                    <span className="font-medium">9h00 - 13h00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Dimanche</span>
+                    <span className="font-medium text-destructive">Fermé</span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </main>
