@@ -1,78 +1,119 @@
 import { useParams, Link } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { useQuoteStore } from '@/lib/store/quote-store';
-import { Plus, Check, Download, ArrowLeft, FileText, Info } from 'lucide-react';
+import { Plus, Check, Download, ArrowLeft, FileText, Info, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import type { ProductSpecification } from '@/types';
+import { useSanityQuery } from '@/hooks/useSanity';
+import { productBySlugQuery } from '@/lib/sanity/queries';
+import type { Product, ProductSpecification } from '@/types';
 
-const mockProducts: Record<string, any> = {
-  'produit-excellence': { 
-    _id: '1', 
-    name: 'Produit Excellence', 
-    slug: 'produit-excellence', 
-    description: 'Un produit de qualité supérieure pour tous vos besoins professionnels. Conçu avec les meilleurs matériaux et une attention particulière aux détails.', 
-    images: [{ asset: { url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=800&q=80' } }], 
-    category: { name: "Produits d'Hygiène", slug: 'hygiene' },
-    specifications: [
-      { label: 'Référence', value: 'PRD-EXC-001' },
-      { label: 'Contenance', value: '5 Litres' },
-      { label: 'Type', value: 'Détergent multi-surfaces' },
-      { label: 'pH', value: 'Neutre (7)' },
-      { label: 'Certification', value: 'ECOCERT' },
-    ]
-  },
-  'solution-premium': { 
-    _id: '2', 
-    name: 'Solution Premium', 
-    slug: 'solution-premium', 
-    description: 'La solution idéale pour optimiser vos processus et améliorer vos résultats. Performance et fiabilité garanties.', 
-    images: [{ asset: { url: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?auto=format&fit=crop&w=800&q=80' } }], 
-    category: { name: 'Vêtements & EPI', slug: 'epi' },
-    specifications: [
-      { label: 'Référence', value: 'SOL-PRM-002' },
-      { label: 'Tailles disponibles', value: 'S, M, L, XL, XXL' },
-      { label: 'Matière', value: '100% Coton 300g/m²' },
-      { label: 'Couleurs', value: 'Bleu, Noir, Gris' },
-      { label: 'Norme', value: 'EN ISO 13688' },
-    ]
-  },
-  'gamme-prestige': { 
-    _id: '3', 
-    name: 'Gamme Prestige', 
-    slug: 'gamme-prestige', 
-    description: 'Notre gamme prestige pour les projets les plus exigeants. Excellence et raffinement à chaque détail.', 
-    images: [{ asset: { url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' } }], 
-    category: { name: 'Matériel Informatique', slug: 'informatique' },
-    specifications: [
-      { label: 'Référence', value: 'GAM-PRE-003' },
-      { label: 'Type', value: 'Ordinateur portable' },
-      { label: 'Processeur', value: 'Intel Core i7' },
-      { label: 'RAM', value: '16 Go DDR4' },
-      { label: 'Stockage', value: 'SSD 512 Go' },
-      { label: 'Écran', value: '15.6" Full HD' },
-    ]
-  },
+// Fallback mock products
+const mockProducts: Record<string, Product> = {
   'detergent-multi-surface': {
-    _id: '4',
+    _id: '1',
     name: 'Détergent Multi-Surface Pro',
     slug: 'detergent-multi-surface',
     description: 'Nettoyant professionnel multi-usages pour toutes surfaces. Formule concentrée haute performance.',
-    images: [{ asset: { url: 'https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?auto=format&fit=crop&w=800&q=80' } }],
-    category: { name: 'Hygiène & Nettoyage', slug: 'hygiene-nettoyage' },
+    images: [{ asset: { _ref: '', url: 'https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?auto=format&fit=crop&w=800&q=80' } }],
+    category: { _id: 'c1', name: 'Hygiène & Nettoyage', slug: 'hygiene-nettoyage' },
     specifications: [
-      { label: 'Référence', value: 'DET-MUL-004' },
+      { label: 'Référence', value: 'DET-MUL-001' },
       { label: 'Contenance', value: '5 Litres' },
       { label: 'Dilution', value: '1:50' },
       { label: 'pH', value: '8.5' },
+    ]
+  },
+  'combinaison-travail': {
+    _id: '2',
+    name: 'Combinaison de Travail',
+    slug: 'combinaison-travail',
+    description: 'Combinaison professionnelle résistante et confortable pour tous types de travaux.',
+    images: [{ asset: { _ref: '', url: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80' } }],
+    category: { _id: 'c2', name: 'Vêtements de Travail', slug: 'vetements-travail' },
+    specifications: [
+      { label: 'Référence', value: 'CMB-TRV-002' },
+      { label: 'Tailles', value: 'S, M, L, XL, XXL' },
+      { label: 'Matière', value: '100% Coton 300g/m²' },
+      { label: 'Norme', value: 'EN ISO 13688' },
+    ]
+  },
+  'cartouche-toner-hp': {
+    _id: '3',
+    name: 'Cartouche Toner HP',
+    slug: 'cartouche-toner-hp',
+    description: 'Toner compatible haute qualité pour imprimantes HP. Rendement optimal.',
+    images: [{ asset: { _ref: '', url: 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=800&q=80' } }],
+    category: { _id: 'c3', name: 'Matériel Informatique', slug: 'materiel-informatique' },
+    specifications: [
+      { label: 'Référence', value: 'TNR-HP-003' },
+      { label: 'Compatibilité', value: 'HP LaserJet Pro' },
+      { label: 'Rendement', value: '3000 pages' },
+      { label: 'Couleur', value: 'Noir' },
+    ]
+  },
+  'gel-hydroalcoolique': {
+    _id: '4',
+    name: 'Gel Hydroalcoolique 5L',
+    slug: 'gel-hydroalcoolique',
+    description: 'Gel désinfectant professionnel en bidon de 5 litres. Formule virucide.',
+    images: [{ asset: { _ref: '', url: 'https://images.unsplash.com/photo-1584483766114-2cea6facdf57?auto=format&fit=crop&w=800&q=80' } }],
+    category: { _id: 'c1', name: 'Hygiène & Nettoyage', slug: 'hygiene-nettoyage' },
+    specifications: [
+      { label: 'Référence', value: 'GEL-HYD-004' },
+      { label: 'Contenance', value: '5 Litres' },
+      { label: 'Alcool', value: '70%' },
+      { label: 'Norme', value: 'EN 14476' },
+    ]
+  },
+  'chaussures-securite-s3': {
+    _id: '5',
+    name: 'Chaussures de Sécurité S3',
+    slug: 'chaussures-securite-s3',
+    description: 'Chaussures de sécurité norme S3, embout acier et semelle anti-perforation.',
+    images: [{ asset: { _ref: '', url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80' } }],
+    category: { _id: 'c2', name: 'Vêtements de Travail', slug: 'vetements-travail' },
+    specifications: [
+      { label: 'Référence', value: 'CHS-S3-005' },
+      { label: 'Pointures', value: '38 à 47' },
+      { label: 'Norme', value: 'EN ISO 20345 S3' },
+      { label: 'Protection', value: 'Embout acier + anti-perforation' },
+    ]
+  },
+  'ramette-papier-a4': {
+    _id: '6',
+    name: 'Ramette Papier A4',
+    slug: 'ramette-papier-a4',
+    description: 'Papier blanc 80g/m², 500 feuilles par ramette. Idéal pour impressions quotidiennes.',
+    images: [{ asset: { _ref: '', url: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=800&q=80' } }],
+    category: { _id: 'c4', name: 'Fournitures de Bureau', slug: 'fournitures-bureau' },
+    specifications: [
+      { label: 'Référence', value: 'PAP-A4-006' },
+      { label: 'Format', value: 'A4 (210 x 297 mm)' },
+      { label: 'Grammage', value: '80g/m²' },
+      { label: 'Quantité', value: '500 feuilles' },
     ]
   },
 };
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const product = slug ? mockProducts[slug] : null;
+  
+  // Fetch from Sanity
+  const { data: sanityProduct, loading } = useSanityQuery<Product>(productBySlugQuery, { slug });
+  
+  // Use Sanity product if available, otherwise fallback to mock
+  const product = sanityProduct || (slug ? mockProducts[slug] : null);
+  
   const addItem = useQuoteStore((state) => state.addItem);
   const isInQuote = useQuoteStore((state) => product ? state.isInQuote(product._id) : false);
+
+  if (loading) {
+    return (
+      <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-muted/30">
+        <Loader2 className="h-8 w-8 animate-spin text-orange" />
+      </main>
+    );
+  }
 
   if (!product) {
     return (
@@ -171,7 +212,12 @@ const ProductDetail = () => {
                 
                 <div className="space-y-4 mt-auto">
                   <button 
-                    onClick={() => addItem({ id: product._id, name: product.name, slug: product.slug, image: product.images[0]?.asset?.url })} 
+                    onClick={() => addItem({ 
+                      id: product._id, 
+                      name: product.name, 
+                      slug: product.slug, 
+                      image: product.images[0]?.asset?.url 
+                    })} 
                     className={`w-full inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-semibold text-lg transition-all ${
                       isInQuote 
                         ? 'bg-green-500 text-white' 

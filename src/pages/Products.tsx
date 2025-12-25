@@ -1,11 +1,14 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Package, ArrowRight, LayoutGrid, List } from 'lucide-react';
+import { Search, Package, ArrowRight, LayoutGrid, List, Loader2 } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { ProductCard } from '@/components/products/ProductCard';
 import { motion } from 'framer-motion';
+import { useSanityQuery } from '@/hooks/useSanity';
+import { allProductsQuery, allCategoriesQuery } from '@/lib/sanity/queries';
+import type { Product, Category } from '@/types';
 
-// Mock categories
+// Fallback mock data
 const mockCategories = [
   { _id: 'c1', name: 'Hygiène & Nettoyage', slug: 'hygiene-nettoyage', icon: '🧴' },
   { _id: 'c2', name: 'Vêtements de Travail', slug: 'vetements-travail', icon: '👷' },
@@ -13,7 +16,6 @@ const mockCategories = [
   { _id: 'c4', name: 'Fournitures de Bureau', slug: 'fournitures-bureau', icon: '📎' },
 ];
 
-// Mock products
 const mockProducts = [
   { _id: '1', name: 'Détergent Multi-Surface Pro', slug: 'detergent-multi-surface', description: 'Nettoyant professionnel multi-usages pour toutes surfaces.', images: [{ asset: { _ref: '', url: 'https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?auto=format&fit=crop&w=600&q=80' } }], category: { _id: 'c1', name: 'Hygiène & Nettoyage', slug: 'hygiene-nettoyage' } },
   { _id: '2', name: 'Combinaison de Travail', slug: 'combinaison-travail', description: 'Combinaison professionnelle résistante et confortable.', images: [{ asset: { _ref: '', url: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80' } }], category: { _id: 'c2', name: 'Vêtements de Travail', slug: 'vetements-travail' } },
@@ -28,18 +30,28 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  // Fetch from Sanity
+  const { data: sanityProducts, loading: loadingProducts } = useSanityQuery<Product[]>(allProductsQuery);
+  const { data: sanityCategories, loading: loadingCategories } = useSanityQuery<Category[]>(allCategoriesQuery);
+
+  // Use Sanity data if available, otherwise fallback to mock
+  const products = sanityProducts && sanityProducts.length > 0 ? sanityProducts : mockProducts;
+  const categories = sanityCategories && sanityCategories.length > 0 ? sanityCategories : mockCategories;
+
   const filteredProducts = useMemo(() => {
-    return mockProducts.filter((product) => {
+    return products.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = !selectedCategory || product.category?._id === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, products]);
 
   const selectedCategoryName = selectedCategory 
-    ? mockCategories.find(c => c._id === selectedCategory)?.name 
+    ? categories.find(c => c._id === selectedCategory)?.name 
     : null;
+
+  const isLoading = loadingProducts || loadingCategories;
 
   return (
     <>
@@ -122,7 +134,7 @@ const Products = () => {
             >
               Tous les produits
             </button>
-            {mockCategories.map((category) => (
+            {categories.map((category) => (
               <button
                 key={category._id}
                 onClick={() => setSelectedCategory(category._id)}
@@ -138,15 +150,22 @@ const Products = () => {
             ))}
           </motion.div>
 
+          {/* Loading state */}
+          {isLoading && (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-orange" />
+            </div>
+          )}
+
           {/* Résultats */}
-          {selectedCategoryName && (
+          {!isLoading && selectedCategoryName && (
             <p className="text-center text-muted-foreground mb-6">
               {filteredProducts.length} produit(s) dans <span className="font-medium text-foreground">{selectedCategoryName}</span>
             </p>
           )}
 
           {/* Grille ou Liste produits */}
-          {filteredProducts.length > 0 ? (
+          {!isLoading && filteredProducts.length > 0 ? (
             viewMode === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredProducts.map((product, index) => (
@@ -199,7 +218,7 @@ const Products = () => {
                 ))}
               </div>
             )
-          ) : (
+          ) : !isLoading && (
             <div className="text-center py-16">
               <Package className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
               <h3 className="text-xl font-semibold mb-2">Aucun produit trouvé</h3>
