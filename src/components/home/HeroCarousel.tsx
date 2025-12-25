@@ -1,14 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Mail, MessageCircle, ArrowRight, ChevronDown } from 'lucide-react';
+import { useSanityQuery } from '@/hooks/useSanity';
+import { heroSlidesQuery } from '@/lib/sanity/queries';
 import type { HeroSlide } from '@/types';
 
 import heroHygiene from '@/assets/hero-hygiene.jpg';
 import heroWorkwear from '@/assets/hero-workwear.jpg';
 import heroIT from '@/assets/hero-it.jpg';
 
-const slides: HeroSlide[] = [
+// Fallback slides
+const fallbackSlides: HeroSlide[] = [
   {
     image: heroHygiene,
     title: "Produits d'Hygiène",
@@ -33,9 +36,20 @@ export function HeroCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
+  // Parallax effect
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 500], [0, 150]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0.3]);
+
+  // Fetch slides from Sanity
+  const { data: sanitySlides } = useSanityQuery<HeroSlide[]>(heroSlidesQuery);
+  
+  // Use Sanity slides if available, otherwise fallback
+  const slides = sanitySlides && sanitySlides.length > 0 ? sanitySlides : fallbackSlides;
+
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % slides.length);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
     if (!isAutoPlaying) return;
@@ -57,33 +71,35 @@ export function HeroCarousel() {
 
   return (
     <section className="relative h-screen min-h-[700px] overflow-hidden">
-      {/* Background Images - toutes préchargées */}
-      {slides.map((slide, index) => (
-        <motion.div
-          key={index}
-          initial={false}
-          animate={{ 
-            opacity: index === currentIndex ? 1 : 0,
-            scale: index === currentIndex ? 1 : 1.05
-          }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="absolute inset-0"
-          style={{ zIndex: index === currentIndex ? 1 : 0 }}
-        >
-          <img
-            src={slide.image}
-            alt={slide.title}
-            className="w-full h-full object-cover"
-            loading="eager"
-            width={1920}
-            height={1080}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
-        </motion.div>
-      ))}
+      {/* Background Images with Parallax - toutes préchargées */}
+      <motion.div style={{ y }} className="absolute inset-0">
+        {slides.map((slide, index) => (
+          <motion.div
+            key={index}
+            initial={false}
+            animate={{ 
+              opacity: index === currentIndex ? 1 : 0,
+              scale: index === currentIndex ? 1 : 1.05
+            }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="absolute inset-0"
+            style={{ zIndex: index === currentIndex ? 1 : 0 }}
+          >
+            <img
+              src={slide.image}
+              alt={slide.title}
+              className="w-full h-full object-cover"
+              loading="eager"
+              width={1920}
+              height={1080}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
+          </motion.div>
+        ))}
+      </motion.div>
 
-      {/* Content */}
-      <div className="relative z-10 h-full flex items-center">
+      {/* Content with Parallax Opacity */}
+      <motion.div style={{ opacity }} className="relative z-10 h-full flex items-center">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl">
             {/* Badge */}
@@ -162,7 +178,7 @@ export function HeroCarousel() {
             </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Slide Indicators - Positioned on the left */}
       <div className="absolute bottom-24 left-8 z-20 flex items-center gap-2">

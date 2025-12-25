@@ -7,8 +7,13 @@ export const allProductsQuery = `
     name,
     "slug": slug.current,
     description,
-    images,
-    "category": category->{ _id, name, "slug": slug.current },
+    "images": images[]{
+      "asset": {
+        "_ref": asset._ref,
+        "url": asset->url
+      }
+    },
+    "category": category->{ _id, name, "slug": slug.current, icon },
     "hasDatasheet": defined(datasheet)
   }
 `;
@@ -20,9 +25,15 @@ export const productBySlugQuery = `
     name,
     "slug": slug.current,
     description,
-    images,
-    "category": category->{ _id, name, "slug": slug.current },
-    datasheet { asset->{ url } }
+    "images": images[]{
+      "asset": {
+        "_ref": asset._ref,
+        "url": asset->url
+      }
+    },
+    "category": category->{ _id, name, "slug": slug.current, icon },
+    specifications[]{label, value},
+    "datasheet": datasheet.asset->url
   }
 `;
 
@@ -31,7 +42,8 @@ export const allCategoriesQuery = `
   *[_type == "category"] | order(name asc) {
     _id,
     name,
-    "slug": slug.current
+    "slug": slug.current,
+    icon
   }
 `;
 
@@ -42,8 +54,13 @@ export const productsByCategoryQuery = `
     name,
     "slug": slug.current,
     description,
-    images[0],
-    "category": category->{ _id, name, "slug": slug.current }
+    "images": images[0]{
+      "asset": {
+        "_ref": asset._ref,
+        "url": asset->url
+      }
+    },
+    "category": category->{ _id, name, "slug": slug.current, icon }
   }
 `;
 
@@ -59,7 +76,23 @@ export const featuredProductsQuery = `
     name,
     "slug": slug.current,
     description,
-    images[0],
-    "category": category->{ _id, name, "slug": slug.current }
+    "images": images[0]{
+      "asset": {
+        "_ref": asset._ref,
+        "url": asset->url
+      }
+    },
+    "category": category->{ _id, name, "slug": slug.current, icon }
+  }
+`;
+
+// Récupère les slides du hero carousel
+export const heroSlidesQuery = `
+  *[_type == "heroSlide"] | order(order asc) {
+    _id,
+    title,
+    subtitle,
+    description,
+    "image": image.asset->url
   }
 `;
