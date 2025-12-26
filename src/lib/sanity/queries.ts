@@ -1,6 +1,29 @@
 // Requêtes GROQ pour Sanity CMS
 
-// Récupère tous les produits
+// Récupère tous les produits avec pagination
+export const paginatedProductsQuery = `
+  *[_type == "product"] | order(_createdAt desc) [$start...$end] {
+    _id,
+    name,
+    "slug": slug.current,
+    description,
+    "images": images[0]{
+      "asset": {
+        "_ref": asset._ref,
+        "url": asset->url
+      }
+    },
+    "category": category->{ _id, name, "slug": slug.current, icon },
+    "hasDatasheet": defined(datasheet)
+  }
+`;
+
+// Compte total des produits
+export const productsCountQuery = `
+  count(*[_type == "product"])
+`;
+
+// Récupère tous les produits (legacy)
 export const allProductsQuery = `
   *[_type == "product"] | order(_createdAt desc) {
     _id,
@@ -37,13 +60,15 @@ export const productBySlugQuery = `
   }
 `;
 
-// Récupère toutes les catégories
+// Récupère toutes les catégories avec images
 export const allCategoriesQuery = `
   *[_type == "category"] | order(name asc) {
     _id,
     name,
     "slug": slug.current,
-    icon
+    icon,
+    description,
+    "image": image.asset->url
   }
 `;
 

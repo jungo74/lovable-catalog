@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Menu, X, FileText } from 'lucide-react';
 import { useQuoteStore } from '@/lib/store/quote-store';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { cn } from '@/lib/utils';
 
 export function Header() {
@@ -74,6 +75,9 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
 
             {/* Demande de devis */}
             <Link

@@ -120,7 +120,7 @@ const Contact = () => {
         title="Demande de Devis" 
         description="Contactez SWH Négoce pour toute demande de devis. Remplissez le formulaire et nous vous répondrons sous 24h." 
       />
-      <main className="pt-24 pb-20 bg-gradient-to-b from-muted/50 to-background min-h-screen">
+      <main className="pt-24 pb-20 bg-gradient-to-b from-muted/50 via-background to-muted/30 min-h-screen">
         <div className="container mx-auto px-4">
           {/* En-tête de page */}
           <motion.div 

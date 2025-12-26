@@ -1,5 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
+import { ImageGallery } from '@/components/ui/ImageGallery';
 import { useQuoteStore } from '@/lib/store/quote-store';
 import { Plus, Check, Download, ArrowLeft, FileText, Info, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -107,9 +109,16 @@ const ProductDetail = () => {
   const addItem = useQuoteStore((state) => state.addItem);
   const isInQuote = useQuoteStore((state) => product ? state.isInQuote(product._id) : false);
 
+  // Breadcrumb items for JSON-LD
+  const breadcrumbItems = product ? [
+    { name: 'Accueil', url: '/' },
+    { name: 'Produits', url: '/products' },
+    { name: product.name, url: `/products/${product.slug}` }
+  ] : [];
+
   if (loading) {
     return (
-      <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-muted/30">
+      <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-gradient-to-b from-muted/30 to-background">
         <Loader2 className="h-8 w-8 animate-spin text-orange" />
       </main>
     );
@@ -117,7 +126,7 @@ const ProductDetail = () => {
 
   if (!product) {
     return (
-      <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-muted/30">
+      <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-gradient-to-b from-muted/30 to-background">
         <div className="text-center">
           <h1 className="font-serif text-2xl font-bold mb-4">Produit non trouvé</h1>
           <p className="text-muted-foreground mb-6">Ce produit n'existe pas ou n'est plus disponible.</p>
@@ -131,6 +140,7 @@ const ProductDetail = () => {
   }
 
   const specifications: ProductSpecification[] = product.specifications || [];
+  const hasDatasheet = typeof product.datasheet === 'string' && product.datasheet.length > 0;
 
   return (
     <>
@@ -138,29 +148,25 @@ const ProductDetail = () => {
         title={product.name} 
         description={product.description.slice(0, 160)}
       />
+      <ProductJsonLd product={product} />
+      <BreadcrumbJsonLd items={breadcrumbItems} />
       
-      <main className="pt-20 pb-16 min-h-screen bg-muted/30">
+      <main className="pt-20 pb-16 min-h-screen bg-gradient-to-b from-muted/30 via-background to-muted/20">
         <div className="container mx-auto px-4">
           {/* Navigation */}
           <Link to="/products" className="inline-flex items-center gap-2 text-muted-foreground hover:text-orange mt-6 mb-8 transition-colors">
             <ArrowLeft className="h-4 w-4" /> Retour au catalogue
           </Link>
           
-          <div className="bg-background rounded-2xl shadow-sm border border-border overflow-hidden">
+          <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden">
             <div className="grid lg:grid-cols-2 gap-0">
-              {/* Image */}
+              {/* Image Gallery */}
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="aspect-square bg-muted"
+                className="p-6 lg:p-8 bg-muted/20"
               >
-                <img 
-                  src={product.images[0]?.asset?.url} 
-                  alt={product.name} 
-                  className="w-full h-full object-cover" 
-                  width={800} 
-                  height={800} 
-                />
+                <ImageGallery images={product.images} productName={product.name} />
               </motion.div>
               
               {/* Informations */}
@@ -220,7 +226,7 @@ const ProductDetail = () => {
                     })} 
                     className={`w-full inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-semibold text-lg transition-all ${
                       isInQuote 
-                        ? 'bg-green-500 text-white' 
+                        ? 'bg-success text-success-foreground' 
                         : 'bg-orange text-white hover:bg-orange-dark hover:scale-[1.02]'
                     }`}
                   >
@@ -246,16 +252,17 @@ const ProductDetail = () => {
                   )}
                 </div>
                 
-                {/* Fiche technique */}
-                {product.datasheet?.asset?.url && (
+                {/* Fiche technique PDF */}
+                {hasDatasheet && (
                   <a
-                    href={product.datasheet.asset.url}
+                    href={product.datasheet}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-6 inline-flex items-center gap-2 text-orange hover:underline"
+                    download
+                    className="mt-6 inline-flex items-center gap-2 text-orange hover:underline font-medium"
                   >
                     <Download className="h-5 w-5" />
-                    Télécharger la fiche technique
+                    Télécharger la fiche technique (PDF)
                   </a>
                 )}
               </motion.div>
@@ -267,7 +274,7 @@ const ProductDetail = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mt-12 p-8 bg-primary/5 border border-primary/10 rounded-2xl text-center"
+            className="mt-12 p-8 bg-gradient-to-r from-primary/5 to-orange/5 border border-primary/10 rounded-2xl text-center"
           >
             <h3 className="font-serif text-xl font-bold mb-2">Besoin d'un produit similaire ou spécifique ?</h3>
             <p className="text-muted-foreground mb-4">
