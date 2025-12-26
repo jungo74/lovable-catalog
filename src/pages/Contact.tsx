@@ -91,11 +91,11 @@ const Contact = () => {
     return (
       <>
         <SEOHead title="Demande envoyée" description="Votre demande de devis a été envoyée avec succès." />
-        <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-muted/30">
+        <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary via-muted/50 to-secondary/30 dark:from-background dark:via-muted/20 dark:to-background">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center p-8 max-w-md bg-background rounded-2xl shadow-lg"
+            className="text-center p-8 max-w-md bg-card rounded-2xl shadow-xl border border-border"
           >
             <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-6" />
             <h1 className="font-serif text-3xl font-bold mb-4">Demande envoyée !</h1>
@@ -120,7 +120,7 @@ const Contact = () => {
         title="Demande de Devis" 
         description="Contactez SWH Négoce pour toute demande de devis. Remplissez le formulaire et nous vous répondrons sous 24h." 
       />
-      <main className="pt-24 pb-20 min-h-screen bg-gradient-to-b from-secondary/50 via-muted/30 to-background dark:from-background dark:via-muted/10 dark:to-background">
+      <main className="pt-24 pb-20 min-h-screen bg-gradient-to-br from-secondary via-muted/50 to-secondary/30 dark:from-background dark:via-muted/20 dark:to-background">
         <div className="container mx-auto px-4">
           {/* En-tête de page */}
           <motion.div 
@@ -144,7 +144,7 @@ const Contact = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-background rounded-2xl border border-border p-8 md:p-10 shadow-lg"
+                className="bg-card rounded-2xl border border-border p-8 md:p-10 shadow-xl"
               >
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Honeypot */}

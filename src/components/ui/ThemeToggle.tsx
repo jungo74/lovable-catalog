@@ -55,18 +55,15 @@ export function ThemeToggle({ className }: { className?: string }) {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="absolute"
           >
-            <Moon className="h-5 w-5 text-primary drop-shadow-[0_0_8px_hsl(var(--primary))]" />
+            <Moon className="h-5 w-5 text-orange drop-shadow-[0_0_8px_hsl(var(--orange))]" />
           </motion.div>
         )}
       </AnimatePresence>
       
       {/* Glow effect */}
       <motion.div
-        className={cn(
-          "absolute inset-0 rounded-full opacity-0",
-          isDark ? "bg-orange/20" : "bg-primary/20"
-        )}
-        animate={{ 
+        className="absolute inset-0 rounded-full opacity-0 bg-orange/20"
+        animate={{
           opacity: [0, 0.5, 0],
           scale: [1, 1.2, 1]
         }}
