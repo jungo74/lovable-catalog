@@ -7,7 +7,6 @@ import { Plus, Check, Download, ArrowLeft, FileText, Info, Loader2 } from 'lucid
 import { motion } from 'framer-motion';
 import { useSanityQuery } from '@/hooks/useSanity';
 import { productBySlugQuery } from '@/lib/sanity/queries';
-import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { toast } from 'sonner';
 import type { Product, ProductSpecification } from '@/types';
 
@@ -101,7 +100,6 @@ const mockProducts: Record<string, Product> = {
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { t } = useLanguage();
   
   // Fetch from Sanity
   const { data: sanityProduct, loading, error } = useSanityQuery<Product>(productBySlugQuery, { slug });
@@ -120,10 +118,10 @@ const ProductDetail = () => {
         slug: product.slug, 
         image: product.images[0]?.asset?.url 
       });
-      toast.success(t('addedToQuote'), {
+      toast.success('Produit ajouté au devis', {
         description: product.name,
         action: {
-          label: t('requestQuote'),
+          label: 'Voir le devis',
           onClick: () => window.location.href = '/contact'
         }
       });
@@ -132,7 +130,7 @@ const ProductDetail = () => {
 
   // Show error toast if Sanity fetch fails
   if (error) {
-    toast.error(t('error'), {
+    toast.error('Erreur', {
       description: 'Erreur lors du chargement du produit'
     });
   }
@@ -256,11 +254,11 @@ const ProductDetail = () => {
                   >
                     {isInQuote ? (
                       <>
-                        <Check className="h-5 w-5" /> {t('addedToQuote')}
+                        <Check className="h-5 w-5" /> Ajouté au devis
                       </>
                     ) : (
                       <>
-                        <Plus className="h-5 w-5" /> {t('addToQuote')}
+                        <Plus className="h-5 w-5" /> Ajouter au devis
                       </>
                     )}
                   </button>
@@ -271,7 +269,7 @@ const ProductDetail = () => {
                       className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 border-2 border-orange text-orange rounded-xl font-semibold hover:bg-orange hover:text-white transition-all"
                     >
                       <FileText className="h-5 w-5" />
-                      {t('requestQuote')}
+                      Finaliser ma demande
                     </Link>
                   )}
                 </div>
@@ -283,14 +281,14 @@ const ProductDetail = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => {
-                      toast.success(t('downloadDatasheet'), {
-                        description: 'Téléchargement en cours...'
+                      toast.success('Téléchargement', {
+                        description: 'Fiche technique en cours de téléchargement...'
                       });
                     }}
                     className="mt-6 inline-flex items-center gap-2 text-orange hover:underline font-medium"
                   >
                     <Download className="h-5 w-5" />
-                    {t('downloadDatasheet')} (PDF)
+                    Télécharger la fiche technique (PDF)
                   </a>
                 )}
               </motion.div>

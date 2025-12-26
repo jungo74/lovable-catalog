@@ -3,14 +3,11 @@ import { useState, useEffect } from 'react';
 import { Menu, X, FileText } from 'lucide-react';
 import { useQuoteStore } from '@/lib/store/quote-store';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { LanguageSelector } from '@/components/ui/LanguageSelector';
-import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { cn } from '@/lib/utils';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { t } = useLanguage();
   const location = useLocation();
   const itemCount = useQuoteStore((state) => state.getItemCount());
 
@@ -30,9 +27,9 @@ export function Header() {
   }, [location.pathname]);
 
   const navLinks = [
-    { href: '/', label: t('home') },
-    { href: '/products', label: t('products') },
-    { href: '/contact', label: t('contact') },
+    { href: '/', label: 'Accueil' },
+    { href: '/products', label: 'Produits' },
+    { href: '/contact', label: 'Contact' },
   ];
 
   const isActive = (path: string) => {
@@ -79,9 +76,6 @@ export function Header() {
               </Link>
             ))}
 
-            {/* Language Selector */}
-            <LanguageSelector variant="header" />
-
             {/* Theme Toggle */}
             <ThemeToggle />
 
@@ -91,7 +85,7 @@ export function Header() {
               className="relative flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all bg-orange text-white hover:bg-orange-dark"
             >
               <FileText className="h-4 w-4" />
-              {t('requestQuote')}
+              Demander un devis
               {itemCount > 0 && (
                 <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 text-xs bg-primary text-white rounded-full font-bold animate-pulse">
                   {itemCount}

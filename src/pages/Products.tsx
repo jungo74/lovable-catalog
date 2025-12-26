@@ -6,7 +6,6 @@ import { ProductCard } from '@/components/products/ProductCard';
 import { motion } from 'framer-motion';
 import { useSanityQuery } from '@/hooks/useSanity';
 import { allProductsQuery, allCategoriesQuery } from '@/lib/sanity/queries';
-import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Product, Category } from '@/types';
 
 const PRODUCTS_PER_PAGE = 12;
@@ -33,7 +32,6 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const { t } = useLanguage();
 
   // Get current page from URL
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
@@ -88,10 +86,10 @@ const Products = () => {
   return (
     <>
       <SEOHead
-        title={`${t('ourCatalog')} - Page ${validPage}`}
-        description={t('catalogDescription')}
+        title={`Catalogue Produits - Page ${validPage}`}
+        description="Explorez notre gamme complète de produits professionnels : hygiène, vêtements de travail, matériel informatique."
       />
-      <main className="pt-20 pb-16 min-h-screen bg-gradient-to-b from-muted/30 via-background to-muted/20">
+      <main className="pt-20 pb-16 min-h-screen bg-gradient-to-b from-secondary/50 via-muted/30 to-background dark:from-background dark:via-muted/10 dark:to-background">
         <div className="container mx-auto px-4">
           {/* En-tête */}
           <div className="text-center py-12">
@@ -100,7 +98,7 @@ const Products = () => {
               animate={{ opacity: 1, y: 0 }}
               className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4"
             >
-              {t('ourCatalog')}
+              Notre Catalogue
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
@@ -108,7 +106,7 @@ const Products = () => {
               transition={{ delay: 0.1 }}
               className="text-muted-foreground text-lg max-w-2xl mx-auto"
             >
-              {t('catalogDescription')}
+              Découvrez notre sélection de produits professionnels de qualité
             </motion.p>
           </div>
 
@@ -124,24 +122,24 @@ const Products = () => {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder={t('searchProduct')}
+                  placeholder="Rechercher un produit..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/50 focus:border-orange transition-all"
+                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/50 focus:border-orange transition-all"
                 />
               </div>
-              <div className="flex rounded-xl border border-border bg-background overflow-hidden">
+              <div className="flex rounded-xl border border-border bg-card overflow-hidden">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-4 transition-colors ${viewMode === 'grid' ? 'bg-orange text-white' : 'text-muted-foreground hover:text-foreground'}`}
-                  aria-label={t('gridView')}
+                  aria-label="Vue grille"
                 >
                   <LayoutGrid className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
                   className={`p-4 transition-colors ${viewMode === 'list' ? 'bg-orange text-white' : 'text-muted-foreground hover:text-foreground'}`}
-                  aria-label={t('listView')}
+                  aria-label="Vue liste"
                 >
                   <List className="h-5 w-5" />
                 </button>
@@ -161,10 +159,10 @@ const Products = () => {
               className={`px-5 py-2.5 rounded-full font-medium text-sm transition-all ${
                 !selectedCategory
                   ? 'bg-orange text-white shadow-lg shadow-orange/25'
-                  : 'bg-background border border-border text-foreground hover:border-orange/50'
+                  : 'bg-card border border-border text-foreground hover:border-orange/50'
               }`}
             >
-              {t('allProducts')}
+              Tous les produits
             </button>
             {categories.map((category) => (
               <button
@@ -173,7 +171,7 @@ const Products = () => {
                 className={`px-5 py-2.5 rounded-full font-medium text-sm transition-all flex items-center gap-2 ${
                   selectedCategory === category._id
                     ? 'bg-orange text-white shadow-lg shadow-orange/25'
-                    : 'bg-background border border-border text-foreground hover:border-orange/50'
+                    : 'bg-card border border-border text-foreground hover:border-orange/50'
                 }`}
               >
                 <span>{category.icon}</span>
@@ -192,14 +190,14 @@ const Products = () => {
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Package className="h-4 w-4" />
                 <span>
-                  {t('productsFound', { count: totalProducts })}
+                  {totalProducts} produits trouvés
                   {selectedCategoryName && (
-                    <> {t('productsIn')} <span className="font-medium text-foreground">{selectedCategoryName}</span></>
+                    <> dans <span className="font-medium text-foreground">{selectedCategoryName}</span></>
                   )}
                 </span>
               </div>
               <div className="text-sm font-medium text-foreground">
-                {t('pageOf', { current: validPage, total: totalPages })}
+                Page {validPage} sur {totalPages}
               </div>
             </motion.div>
           )}
@@ -237,7 +235,7 @@ const Products = () => {
                   >
                     <Link
                       to={`/products/${product.slug}`}
-                      className="flex gap-4 md:gap-6 bg-background rounded-xl p-4 border border-border hover:border-orange/50 hover:shadow-md transition-all group"
+                      className="flex gap-4 md:gap-6 bg-card rounded-xl p-4 border border-border hover:border-orange/50 hover:shadow-md transition-all group"
                     >
                       <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
                         <img
@@ -269,9 +267,9 @@ const Products = () => {
           ) : !isLoading && (
             <div className="text-center py-16">
               <Package className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">{t('noProductFound')}</h3>
+              <h3 className="text-xl font-semibold mb-2">Aucun produit trouvé</h3>
               <p className="text-muted-foreground mb-6">
-                {t('noProductDescription')}
+                Nous n'avons pas trouvé de produit correspondant à votre recherche.
               </p>
             </div>
           )}
@@ -286,22 +284,20 @@ const Products = () => {
               <button
                 onClick={() => goToPage(validPage - 1)}
                 disabled={validPage === 1}
-                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-border bg-card text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronLeft className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('previous')}</span>
+                <span className="hidden sm:inline">Précédent</span>
               </button>
 
               <div className="flex items-center gap-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
                   .filter(page => {
-                    // Show first, last, current, and adjacent pages
                     return page === 1 || 
                            page === totalPages || 
                            Math.abs(page - validPage) <= 1;
                   })
                   .map((page, idx, arr) => {
-                    // Add ellipsis
                     const showEllipsisBefore = idx > 0 && page - arr[idx - 1] > 1;
                     return (
                       <div key={page} className="flex items-center gap-1">
@@ -313,7 +309,7 @@ const Products = () => {
                           className={`w-10 h-10 rounded-lg font-medium transition-all ${
                             page === validPage
                               ? 'bg-orange text-white shadow-lg shadow-orange/25'
-                              : 'border border-border bg-background text-foreground hover:bg-muted'
+                              : 'border border-border bg-card text-foreground hover:bg-muted'
                           }`}
                         >
                           {page}
@@ -326,9 +322,9 @@ const Products = () => {
               <button
                 onClick={() => goToPage(validPage + 1)}
                 disabled={validPage === totalPages}
-                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-border bg-card text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                <span className="hidden sm:inline">{t('next')}</span>
+                <span className="hidden sm:inline">Suivant</span>
                 <ChevronRight className="h-4 w-4" />
               </button>
             </motion.div>
@@ -345,19 +341,20 @@ const Products = () => {
             
             <div className="relative z-10 max-w-3xl mx-auto text-center">
               <span className="inline-block px-4 py-1.5 bg-orange/20 text-orange rounded-full text-sm font-medium mb-4">
-                {t('customService')}
+                Service sur mesure
               </span>
               <h2 className="font-serif text-2xl md:text-3xl font-bold mb-4">
-                {t('productNotFound')}
+                Vous ne trouvez pas votre produit ?
               </h2>
               <p className="text-primary-foreground/80 text-lg mb-8">
-                {t('productNotFoundDescription')}
+                Grâce à notre réseau de fournisseurs, <strong className="text-orange">SWH NEGOCE</strong> peut 
+                vous procurer n'importe quel produit, même s'il n'est pas dans notre catalogue.
               </p>
               <Link
                 to="/contact?custom=true"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-orange text-white rounded-lg font-semibold hover:bg-orange-dark transition-all hover:scale-105"
               >
-                {t('makeSpecialRequest')}
+                Faire une demande spéciale
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </div>
