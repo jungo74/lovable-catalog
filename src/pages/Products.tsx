@@ -59,7 +59,7 @@ const Products = () => {
         title="Catalogue Produits"
         description="Explorez notre gamme complète de produits professionnels : hygiène, vêtements de travail, matériel informatique. Demandez un devis personnalisé."
       />
-      <main className="pt-20 pb-16 min-h-screen bg-muted/30">
+      <main className="pt-20 pb-16 min-h-screen bg-gradient-to-b from-muted/30 via-background to-muted/20">
         <div className="container mx-auto px-4">
           {/* En-tête */}
           <div className="text-center py-12">

@@ -5,6 +5,8 @@ export interface Category {
   name: string;
   slug: string;
   icon?: string;
+  description?: string;
+  image?: string;
 }
 
 export interface SanityImage {
@@ -29,11 +31,7 @@ export interface Product {
   images: SanityImage[];
   category?: Category;
   specifications?: ProductSpecification[];
-  datasheet?: {
-    asset: {
-      url: string;
-    };
-  };
+  datasheet?: string;
   hasDatasheet?: boolean;
 }
 
@@ -63,6 +61,12 @@ export interface ContactFormData {
   products: QuoteItem[];
   attachment?: File | null;
   honeypot?: string;
+}
+
+// FAQ Types
+export interface FAQItem {
+  question: string;
+  answer: string;
 }
 
 // Configuration SEO simplifiée
