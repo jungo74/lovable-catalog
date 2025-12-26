@@ -144,7 +144,7 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-gradient-to-b from-muted/30 to-background">
+      <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary via-muted/50 to-secondary/30 dark:from-background dark:via-muted/20 dark:to-background">
         <Loader2 className="h-8 w-8 animate-spin text-orange" />
       </main>
     );
@@ -152,7 +152,7 @@ const ProductDetail = () => {
 
   if (!product) {
     return (
-      <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-gradient-to-b from-muted/30 to-background">
+      <main className="pt-24 pb-16 min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary via-muted/50 to-secondary/30 dark:from-background dark:via-muted/20 dark:to-background">
         <div className="text-center">
           <h1 className="font-serif text-2xl font-bold mb-4">Produit non trouvé</h1>
           <p className="text-muted-foreground mb-6">Ce produit n'existe pas ou n'est plus disponible.</p>
@@ -177,7 +177,7 @@ const ProductDetail = () => {
       <ProductJsonLd product={product} />
       <BreadcrumbJsonLd items={breadcrumbItems} />
       
-      <main className="pt-20 pb-16 min-h-screen bg-gradient-to-b from-muted/30 via-background to-muted/20">
+      <main className="pt-20 pb-16 min-h-screen bg-gradient-to-br from-secondary via-muted/50 to-secondary/30 dark:from-background dark:via-muted/20 dark:to-background">
         <div className="container mx-auto px-4">
           {/* Navigation */}
           <Link to="/products" className="inline-flex items-center gap-2 text-muted-foreground hover:text-orange mt-6 mb-8 transition-colors">
