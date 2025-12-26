@@ -1,12 +1,15 @@
-import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Package, ArrowRight, LayoutGrid, List, Loader2 } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Search, Package, ArrowRight, LayoutGrid, List, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { ProductCard } from '@/components/products/ProductCard';
 import { motion } from 'framer-motion';
 import { useSanityQuery } from '@/hooks/useSanity';
 import { allProductsQuery, allCategoriesQuery } from '@/lib/sanity/queries';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Product, Category } from '@/types';
+
+const PRODUCTS_PER_PAGE = 12;
 
 // Fallback mock data
 const mockCategories = [
@@ -26,9 +29,14 @@ const mockProducts = [
 ];
 
 const Products = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const { t } = useLanguage();
+
+  // Get current page from URL
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
   // Fetch from Sanity
   const { data: sanityProducts, loading: loadingProducts } = useSanityQuery<Product[]>(allProductsQuery);
@@ -47,6 +55,30 @@ const Products = () => {
     });
   }, [searchQuery, selectedCategory, products]);
 
+  // Pagination
+  const totalProducts = filteredProducts.length;
+  const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
+  const validPage = Math.max(1, Math.min(currentPage, totalPages || 1));
+
+  const paginatedProducts = useMemo(() => {
+    const start = (validPage - 1) * PRODUCTS_PER_PAGE;
+    return filteredProducts.slice(start, start + PRODUCTS_PER_PAGE);
+  }, [filteredProducts, validPage]);
+
+  // Update URL when page changes
+  const goToPage = (page: number) => {
+    const newPage = Math.max(1, Math.min(page, totalPages));
+    setSearchParams({ page: newPage.toString() });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setSearchParams({ page: '1' });
+    }
+  }, [searchQuery, selectedCategory]);
+
   const selectedCategoryName = selectedCategory 
     ? categories.find(c => c._id === selectedCategory)?.name 
     : null;
@@ -56,8 +88,8 @@ const Products = () => {
   return (
     <>
       <SEOHead
-        title="Catalogue Produits"
-        description="Explorez notre gamme complète de produits professionnels : hygiène, vêtements de travail, matériel informatique. Demandez un devis personnalisé."
+        title={`${t('ourCatalog')} - Page ${validPage}`}
+        description={t('catalogDescription')}
       />
       <main className="pt-20 pb-16 min-h-screen bg-gradient-to-b from-muted/30 via-background to-muted/20">
         <div className="container mx-auto px-4">
@@ -68,7 +100,7 @@ const Products = () => {
               animate={{ opacity: 1, y: 0 }}
               className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4"
             >
-              Notre Catalogue
+              {t('ourCatalog')}
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
@@ -76,7 +108,7 @@ const Products = () => {
               transition={{ delay: 0.1 }}
               className="text-muted-foreground text-lg max-w-2xl mx-auto"
             >
-              Découvrez notre sélection de produits professionnels de qualité
+              {t('catalogDescription')}
             </motion.p>
           </div>
 
@@ -92,7 +124,7 @@ const Products = () => {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Rechercher un produit..."
+                  placeholder={t('searchProduct')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange/50 focus:border-orange transition-all"
@@ -102,14 +134,14 @@ const Products = () => {
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-4 transition-colors ${viewMode === 'grid' ? 'bg-orange text-white' : 'text-muted-foreground hover:text-foreground'}`}
-                  aria-label="Vue grille"
+                  aria-label={t('gridView')}
                 >
                   <LayoutGrid className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
                   className={`p-4 transition-colors ${viewMode === 'list' ? 'bg-orange text-white' : 'text-muted-foreground hover:text-foreground'}`}
-                  aria-label="Vue liste"
+                  aria-label={t('listView')}
                 >
                   <List className="h-5 w-5" />
                 </button>
@@ -122,7 +154,7 @@ const Products = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex flex-wrap justify-center gap-3 mb-10"
+            className="flex flex-wrap justify-center gap-3 mb-6"
           >
             <button
               onClick={() => setSelectedCategory(null)}
@@ -132,7 +164,7 @@ const Products = () => {
                   : 'bg-background border border-border text-foreground hover:border-orange/50'
               }`}
             >
-              Tous les produits
+              {t('allProducts')}
             </button>
             {categories.map((category) => (
               <button
@@ -150,6 +182,28 @@ const Products = () => {
             ))}
           </motion.div>
 
+          {/* Pagination info */}
+          {!isLoading && totalProducts > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 px-4 py-3 bg-card rounded-xl border border-border"
+            >
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Package className="h-4 w-4" />
+                <span>
+                  {t('productsFound', { count: totalProducts })}
+                  {selectedCategoryName && (
+                    <> {t('productsIn')} <span className="font-medium text-foreground">{selectedCategoryName}</span></>
+                  )}
+                </span>
+              </div>
+              <div className="text-sm font-medium text-foreground">
+                {t('pageOf', { current: validPage, total: totalPages })}
+              </div>
+            </motion.div>
+          )}
+
           {/* Loading state */}
           {isLoading && (
             <div className="flex justify-center py-12">
@@ -157,23 +211,16 @@ const Products = () => {
             </div>
           )}
 
-          {/* Résultats */}
-          {!isLoading && selectedCategoryName && (
-            <p className="text-center text-muted-foreground mb-6">
-              {filteredProducts.length} produit(s) dans <span className="font-medium text-foreground">{selectedCategoryName}</span>
-            </p>
-          )}
-
           {/* Grille ou Liste produits */}
-          {!isLoading && filteredProducts.length > 0 ? (
+          {!isLoading && paginatedProducts.length > 0 ? (
             viewMode === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredProducts.map((product, index) => (
+                {paginatedProducts.map((product, index) => (
                   <motion.div
                     key={product._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index }}
+                    transition={{ delay: 0.05 * index }}
                   >
                     <ProductCard product={product} />
                   </motion.div>
@@ -181,7 +228,7 @@ const Products = () => {
               </div>
             ) : (
               <div className="space-y-4 max-w-4xl mx-auto">
-                {filteredProducts.map((product, index) => (
+                {paginatedProducts.map((product, index) => (
                   <motion.div
                     key={product._id}
                     initial={{ opacity: 0, x: -20 }}
@@ -197,6 +244,7 @@ const Products = () => {
                           src={product.images?.[0]?.asset?.url}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
                         />
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -221,11 +269,69 @@ const Products = () => {
           ) : !isLoading && (
             <div className="text-center py-16">
               <Package className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Aucun produit trouvé</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('noProductFound')}</h3>
               <p className="text-muted-foreground mb-6">
-                Nous n'avons pas trouvé de produit correspondant à votre recherche.
+                {t('noProductDescription')}
               </p>
             </div>
+          )}
+
+          {/* Pagination controls */}
+          {!isLoading && totalPages > 1 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-center gap-2 mt-12"
+            >
+              <button
+                onClick={() => goToPage(validPage - 1)}
+                disabled={validPage === 1}
+                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('previous')}</span>
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => {
+                    // Show first, last, current, and adjacent pages
+                    return page === 1 || 
+                           page === totalPages || 
+                           Math.abs(page - validPage) <= 1;
+                  })
+                  .map((page, idx, arr) => {
+                    // Add ellipsis
+                    const showEllipsisBefore = idx > 0 && page - arr[idx - 1] > 1;
+                    return (
+                      <div key={page} className="flex items-center gap-1">
+                        {showEllipsisBefore && (
+                          <span className="px-2 text-muted-foreground">...</span>
+                        )}
+                        <button
+                          onClick={() => goToPage(page)}
+                          className={`w-10 h-10 rounded-lg font-medium transition-all ${
+                            page === validPage
+                              ? 'bg-orange text-white shadow-lg shadow-orange/25'
+                              : 'border border-border bg-background text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              <button
+                onClick={() => goToPage(validPage + 1)}
+                disabled={validPage === totalPages}
+                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                <span className="hidden sm:inline">{t('next')}</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </motion.div>
           )}
 
           {/* Section "Produit introuvable" */}
@@ -239,20 +345,19 @@ const Products = () => {
             
             <div className="relative z-10 max-w-3xl mx-auto text-center">
               <span className="inline-block px-4 py-1.5 bg-orange/20 text-orange rounded-full text-sm font-medium mb-4">
-                Service sur mesure
+                {t('customService')}
               </span>
               <h2 className="font-serif text-2xl md:text-3xl font-bold mb-4">
-                Vous ne trouvez pas votre produit ?
+                {t('productNotFound')}
               </h2>
               <p className="text-primary-foreground/80 text-lg mb-8">
-                Grâce à notre réseau de fournisseurs, <strong className="text-orange">SWH NEGOCE</strong> peut 
-                vous procurer n'importe quel produit, même s'il n'est pas dans notre catalogue.
+                {t('productNotFoundDescription')}
               </p>
               <Link
                 to="/contact?custom=true"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-orange text-white rounded-lg font-semibold hover:bg-orange-dark transition-all hover:scale-105"
               >
-                Faire une demande spéciale
+                {t('makeSpecialRequest')}
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </div>

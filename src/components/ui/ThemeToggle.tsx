@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function ThemeToggle({ className }: { className?: string }) {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Check initial theme
     const stored = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const shouldBeDark = stored === 'dark' || (!stored && prefersDark);
@@ -23,20 +23,59 @@ export function ThemeToggle({ className }: { className?: string }) {
   };
 
   return (
-    <button
+    <motion.button
       onClick={toggleTheme}
       className={cn(
-        "w-10 h-10 rounded-full flex items-center justify-center transition-all",
-        "bg-muted hover:bg-muted/80 text-foreground",
+        "relative w-10 h-10 rounded-full flex items-center justify-center transition-all",
+        "bg-transparent hover:bg-muted/50 border border-border/50 hover:border-orange/50",
         className
       )}
       aria-label={isDark ? "Passer en mode clair" : "Passer en mode sombre"}
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
     >
-      {isDark ? (
-        <Sun className="h-5 w-5" />
-      ) : (
-        <Moon className="h-5 w-5" />
-      )}
-    </button>
+      <AnimatePresence mode="wait" initial={false}>
+        {isDark ? (
+          <motion.div
+            key="sun"
+            initial={{ rotate: -90, scale: 0, opacity: 0 }}
+            animate={{ rotate: 0, scale: 1, opacity: 1 }}
+            exit={{ rotate: 90, scale: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="absolute"
+          >
+            <Sun className="h-5 w-5 text-orange drop-shadow-[0_0_8px_hsl(var(--orange))]" />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="moon"
+            initial={{ rotate: 90, scale: 0, opacity: 0 }}
+            animate={{ rotate: 0, scale: 1, opacity: 1 }}
+            exit={{ rotate: -90, scale: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="absolute"
+          >
+            <Moon className="h-5 w-5 text-primary drop-shadow-[0_0_8px_hsl(var(--primary))]" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Glow effect */}
+      <motion.div
+        className={cn(
+          "absolute inset-0 rounded-full opacity-0",
+          isDark ? "bg-orange/20" : "bg-primary/20"
+        )}
+        animate={{ 
+          opacity: [0, 0.5, 0],
+          scale: [1, 1.2, 1]
+        }}
+        transition={{ 
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+    </motion.button>
   );
 }

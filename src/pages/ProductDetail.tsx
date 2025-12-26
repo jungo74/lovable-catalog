@@ -7,6 +7,8 @@ import { Plus, Check, Download, ArrowLeft, FileText, Info, Loader2 } from 'lucid
 import { motion } from 'framer-motion';
 import { useSanityQuery } from '@/hooks/useSanity';
 import { productBySlugQuery } from '@/lib/sanity/queries';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { toast } from 'sonner';
 import type { Product, ProductSpecification } from '@/types';
 
 // Fallback mock products
@@ -99,15 +101,41 @@ const mockProducts: Record<string, Product> = {
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
+  const { t } = useLanguage();
   
   // Fetch from Sanity
-  const { data: sanityProduct, loading } = useSanityQuery<Product>(productBySlugQuery, { slug });
+  const { data: sanityProduct, loading, error } = useSanityQuery<Product>(productBySlugQuery, { slug });
   
   // Use Sanity product if available, otherwise fallback to mock
   const product = sanityProduct || (slug ? mockProducts[slug] : null);
   
   const addItem = useQuoteStore((state) => state.addItem);
   const isInQuote = useQuoteStore((state) => product ? state.isInQuote(product._id) : false);
+
+  const handleAddToQuote = () => {
+    if (product) {
+      addItem({ 
+        id: product._id, 
+        name: product.name, 
+        slug: product.slug, 
+        image: product.images[0]?.asset?.url 
+      });
+      toast.success(t('addedToQuote'), {
+        description: product.name,
+        action: {
+          label: t('requestQuote'),
+          onClick: () => window.location.href = '/contact'
+        }
+      });
+    }
+  };
+
+  // Show error toast if Sanity fetch fails
+  if (error) {
+    toast.error(t('error'), {
+      description: 'Erreur lors du chargement du produit'
+    });
+  }
 
   // Breadcrumb items for JSON-LD
   const breadcrumbItems = product ? [
@@ -218,12 +246,8 @@ const ProductDetail = () => {
                 
                 <div className="space-y-4 mt-auto">
                   <button 
-                    onClick={() => addItem({ 
-                      id: product._id, 
-                      name: product.name, 
-                      slug: product.slug, 
-                      image: product.images[0]?.asset?.url 
-                    })} 
+                    onClick={handleAddToQuote}
+                    disabled={isInQuote}
                     className={`w-full inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-semibold text-lg transition-all ${
                       isInQuote 
                         ? 'bg-success text-success-foreground' 
@@ -232,11 +256,11 @@ const ProductDetail = () => {
                   >
                     {isInQuote ? (
                       <>
-                        <Check className="h-5 w-5" /> Ajouté au devis
+                        <Check className="h-5 w-5" /> {t('addedToQuote')}
                       </>
                     ) : (
                       <>
-                        <Plus className="h-5 w-5" /> Ajouter au devis
+                        <Plus className="h-5 w-5" /> {t('addToQuote')}
                       </>
                     )}
                   </button>
@@ -247,7 +271,7 @@ const ProductDetail = () => {
                       className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 border-2 border-orange text-orange rounded-xl font-semibold hover:bg-orange hover:text-white transition-all"
                     >
                       <FileText className="h-5 w-5" />
-                      Finaliser ma demande de devis
+                      {t('requestQuote')}
                     </Link>
                   )}
                 </div>
@@ -258,11 +282,15 @@ const ProductDetail = () => {
                     href={product.datasheet}
                     target="_blank"
                     rel="noopener noreferrer"
-                    download
+                    onClick={() => {
+                      toast.success(t('downloadDatasheet'), {
+                        description: 'Téléchargement en cours...'
+                      });
+                    }}
                     className="mt-6 inline-flex items-center gap-2 text-orange hover:underline font-medium"
                   >
                     <Download className="h-5 w-5" />
-                    Télécharger la fiche technique (PDF)
+                    {t('downloadDatasheet')} (PDF)
                   </a>
                 )}
               </motion.div>
